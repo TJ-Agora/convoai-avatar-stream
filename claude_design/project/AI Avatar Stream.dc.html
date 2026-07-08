@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: #E9E9E5; font-family: 'Space Grotesk', sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  @keyframes wf { 0%, 100% { transform: scaleY(0.32); } 50% { transform: scaleY(1); } }
+  @keyframes livepulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes think { 0%, 80%, 100% { opacity: 0.2; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+  image-slot { display: block; }
+  a { color: inherit; }
+</style>
+<script src="image-slot.js"></script>
+</helmet>
+
+<section style="width: max-content; padding: 84px 100px 120px; display: flex; flex-direction: column; gap: 60px; background: #E9E9E5;">
+
+  <!-- ===== TURN HEADER ===== -->
+  <div style="display: flex; flex-direction: column; gap: 18px; max-width: 940px;">
+    <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.18em; color: #9A9A96;">AI AVATAR GROUP CHAT · TURN 1 · STREAM PAGE</span>
+    <h1 style="margin: 0; font: 400 58px/1.02 'Instrument Serif', serif; letter-spacing: -0.01em; color: #0B0B0B;">Two directions for the live stream</h1>
+    <p style="margin: 0; max-width: 760px; font: 400 17px/1.6 'Space Grotesk', sans-serif; color: #6B6B68;">Same feature set, two personalities. <strong style="color:#0B0B0B;font-weight:600;">Studio</strong> stays faithful to your minimal sketch — one avatar, acres of white, hairline speech bubble. <strong style="color:#0B0B0B;font-weight:600;">Broadcast</strong> reframes it as a streaming console with a docked chat rail. Each shows host + participant views, both chat modes, and the edge states.</p>
+    <div style="display: flex; gap: 10px; margin-top: 4px;">
+      <a href="#1a" style="text-decoration: none; padding: 8px 16px; border: 1px solid #D2D2CD; border-radius: 20px; font: 500 13px 'JetBrains Mono', monospace; color: #0B0B0B;">1A · Studio</a>
+      <a href="#1b" style="text-decoration: none; padding: 8px 16px; border: 1px solid #D2D2CD; border-radius: 20px; font: 500 13px 'JetBrains Mono', monospace; color: #0B0B0B;">1B · Broadcast</a>
+    </div>
+  </div>
+
+  <!-- ===== OPTIONS ROW ===== -->
+  <div style="display: flex; gap: 72px; align-items: flex-start; flex-wrap: nowrap;">
+
+    <!-- ============================================================ -->
+    <!-- OPTION 1A — STUDIO                                            -->
+    <!-- ============================================================ -->
+    <div id="1a" style="display: flex; flex-direction: column; gap: 30px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 13px; background: #0B0B0B; font: 600 15px 'JetBrains Mono', monospace; color: #fff;">1A</div>
+        <div>
+          <div style="font: 400 30px 'Instrument Serif', serif; color: #0B0B0B;">Studio</div>
+          <div style="font: 400 14px 'Space Grotesk', sans-serif; color: #8A8A86;">Editorial · airy · faithful to your mockup</div>
+        </div>
+      </div>
+
+      <!-- FRAME A-1 : HOST · BATCHED · SPEAKING -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.14em; color: #9A9A96;">HOST VIEW · BATCHED MODE · SPEAKING</span>
+        <div style="position: relative; width: 1000px; height: 620px; border-radius: 24px; background: #fff; border: 1px solid #E2E2DE; box-shadow: 0 34px 70px -34px rgba(0,0,0,0.30); overflow: hidden;">
+          <div style="position: absolute; inset: 0; padding: 40px 46px; display: flex; flex-direction: column;">
+            <!-- top bar -->
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: start;">
+              <div style="justify-self: start; display: flex; align-items: center; gap: 9px;">
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: #2FA46B;"></div>
+                <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.05em; color: #6B6B68;">24 WATCHING</span>
+              </div>
+              <div style="justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.16em; color: #9A9A96;">BATCHED · ANSWERING THIS ROUND</span>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="font: 600 12px 'JetBrains Mono', monospace; color: #0B0B0B;">12 questions</span>
+                  <div style="width: 150px; height: 4px; border-radius: 3px; background: #EAEAE6; overflow: hidden;"><div style="width: 66%; height: 100%; background: #0B0B0B;"></div></div>
+                  <span style="font: 500 12px 'JetBrains Mono', monospace; color: #9A9A96;">next round 0:24</span>
+                </div>
+              </div>
+              <div style="justify-self: end; display: flex; align-items: center; gap: 9px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #E0524A; animation: livepulse 1.6s ease-in-out infinite;"></div>
+                <span style="font: 600 12px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #0B0B0B;">LIVE</span>
+              </div>
+            </div>
+            <!-- center -->
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 54px;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <image-slot id="studio-avatar" shape="rounded" radius="16" placeholder="Drop avatar" style="width: 288px; height: 372px;"></image-slot>
+                {{ waveActive }}
+              </div>
+              <div style="position: relative; max-width: 292px; border: 2px solid #0B0B0B; border-radius: 18px; padding: 22px 24px; background: #fff;">
+                <div style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.07em; color: #9A9A96; margin-bottom: 9px;">RESPONDING TO 12 QUESTIONS</div>
+                <div style="font: 400 21px/1.4 'Instrument Serif', serif; color: #0B0B0B;">"Great questions — a few of you asked about the octopus. Fun fact: they have three hearts and blue blood…"</div>
+                <div style="position: absolute; left: -9px; top: 46px; width: 16px; height: 16px; background: #fff; border-left: 2px solid #0B0B0B; border-bottom: 2px solid #0B0B0B; transform: rotate(45deg);"></div>
+              </div>
+            </div>
+            <!-- bottom -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <span style="font: 400 14px 'Space Grotesk', sans-serif; color: #B0B0AB;">User 088 — Hello!</span>
+                  <span style="font: 400 14px 'Space Grotesk', sans-serif; color: #8A8A86;">User 123 — Tell us an interesting fact about this!</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; width: 348px; height: 50px; padding: 0 7px 0 20px; border: 1px solid #E2E2DE; border-radius: 26px; background: #fff;">
+                  <span style="flex: 1; font: 400 15px 'Space Grotesk', sans-serif; color: #A6A6A1;">Type a message…</span>
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: #0B0B0B; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">→</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 9px; height: 46px; padding: 0 22px; border-radius: 24px; background: #0B0B0B;">
+                <span style="font: 500 14px 'Space Grotesk', sans-serif; color: #fff;">+ Add Script</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRAME A-2 : PARTICIPANT · SEQUENTIAL · LISTENING -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.14em; color: #9A9A96;">PARTICIPANT VIEW · SEQUENTIAL MODE · LISTENING</span>
+        <div style="position: relative; width: 1000px; height: 620px; border-radius: 24px; background: #fff; border: 1px solid #E2E2DE; box-shadow: 0 34px 70px -34px rgba(0,0,0,0.30); overflow: hidden;">
+          <div style="position: absolute; inset: 0; padding: 40px 46px; display: flex; flex-direction: column;">
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: start;">
+              <div style="justify-self: start; display: flex; align-items: center; gap: 9px;">
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: #2FA46B;"></div>
+                <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.05em; color: #6B6B68;">24 WATCHING</span>
+              </div>
+              <div style="justify-self: center;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.16em; color: #9A9A96;">SEQUENTIAL · ANSWERING ONE BY ONE</span>
+              </div>
+              <div style="justify-self: end; display: flex; align-items: center; gap: 9px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #E0524A; animation: livepulse 1.6s ease-in-out infinite;"></div>
+                <span style="font: 600 12px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #0B0B0B;">LIVE</span>
+              </div>
+            </div>
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 54px;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <div style="width: 288px; height: 372px; border-radius: 16px; background: repeating-linear-gradient(45deg, #EFEFEB, #EFEFEB 9px, #F6F6F3 9px, #F6F6F3 18px); display: flex; align-items: center; justify-content: center;">
+                  <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.1em; color: #B4B4AF;">AVATAR VIDEO</span>
+                </div>
+                {{ waveMuted }}
+              </div>
+              <div style="position: relative; max-width: 292px; border: 2px solid #D6D6D1; border-radius: 18px; padding: 22px 24px; background: #fff;">
+                <div style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.07em; color: #B0B0AB; margin-bottom: 9px;">STATUS</div>
+                <div style="font: 400 21px/1.4 'Instrument Serif', serif; color: #6B6B68;">Listening — I'll take these in the order they came in.</div>
+                <div style="position: absolute; left: -9px; top: 46px; width: 16px; height: 16px; background: #fff; border-left: 2px solid #D6D6D1; border-bottom: 2px solid #D6D6D1; transform: rotate(45deg);"></div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+              <div style="display: flex; align-items: center; gap: 12px; width: 348px; height: 50px; padding: 0 7px 0 20px; border: 1px solid #E2E2DE; border-radius: 26px; background: #fff;">
+                <span style="flex: 1; font: 400 15px 'Space Grotesk', sans-serif; color: #A6A6A1;">Ask a question…</span>
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: #0B0B0B; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">→</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px; width: 322px;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.14em; color: #9A9A96;">IN QUEUE</span>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 4px 2px;">
+                  <span style="font: 600 11px 'JetBrains Mono', monospace; color: #2FA46B; width: 34px;">NOW</span>
+                  <span style="flex: 1; font: 400 14px 'Space Grotesk', sans-serif; color: #6B6B68; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User 088 — What's the ETA on beta?</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: #F4F4F1;">
+                  <span style="font: 600 11px 'JetBrains Mono', monospace; color: #0B0B0B; width: 34px;">02</span>
+                  <span style="flex: 1; font: 500 14px 'Space Grotesk', sans-serif; color: #0B0B0B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">You — How does pricing scale?</span>
+                  <span style="font: 500 11px 'JetBrains Mono', monospace; color: #8A8A86;">~40s</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 4px 2px;">
+                  <span style="font: 600 11px 'JetBrains Mono', monospace; color: #B0B0AB; width: 34px;">03</span>
+                  <span style="flex: 1; font: 400 14px 'Space Grotesk', sans-serif; color: #A6A6A1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User 12 — Can it do video?</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- A EDGE STATES -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.14em; color: #9A9A96;">EDGE STATES</span>
+        <div style="display: flex; gap: 22px;">
+          <div style="width: 312px; height: 196px; border-radius: 20px; background: #fff; border: 1px solid #E2E2DE; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; border: 3px solid #EAEAE6; border-top-color: #0B0B0B; animation: spin 0.9s linear infinite;"></div>
+            <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #6B6B68;">CONNECTING TO CHANNEL</span>
+          </div>
+          <div style="width: 312px; height: 196px; border-radius: 20px; background: #fff; border: 1px solid #E2E2DE; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center;">
+            <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #B0B0AB;">NO MESSAGES YET</span>
+            <span style="font: 400 21px 'Instrument Serif', serif; color: #0B0B0B;">Say hello to start</span>
+            <span style="font: 400 13px 'Space Grotesk', sans-serif; color: #8A8A86;">Be the first to ask a question.</span>
+          </div>
+          <div style="width: 312px; height: 196px; border-radius: 20px; background: #fff; border: 1px solid #E2E2DE; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center;">
+            <div style="width: 9px; height: 9px; border-radius: 50%; background: #E0524A; animation: livepulse 1.2s ease-in-out infinite;"></div>
+            <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #0B0B0B;">CONNECTION LOST</span>
+            <span style="font: 400 13px 'Space Grotesk', sans-serif; color: #8A8A86;">Reconnecting…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 1B — BROADCAST                                         -->
+    <!-- ============================================================ -->
+    <div id="1b" style="display: flex; flex-direction: column; gap: 30px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 13px; background: #0B0B0B; font: 600 15px 'JetBrains Mono', monospace; color: #fff;">1B</div>
+        <div>
+          <div style="font: 400 30px 'Instrument Serif', serif; color: #0B0B0B;">Broadcast</div>
+          <div style="font: 400 14px 'Space Grotesk', sans-serif; color: #8A8A86;">Structured · docked chat rail · product console</div>
+        </div>
+      </div>
+
+      <!-- FRAME B-1 : HOST · BATCHED · SPEAKING -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.14em; color: #9A9A96;">HOST VIEW · BATCHED MODE · SPEAKING</span>
+        <div style="position: relative; width: 1000px; height: 620px; border-radius: 24px; background: #fff; border: 1px solid #E2E2DE; box-shadow: 0 34px 70px -34px rgba(0,0,0,0.30); overflow: hidden; display: flex;">
+          <!-- STAGE -->
+          <div style="flex: 1; position: relative; background: #F4F4F1; display: flex; flex-direction: column; padding: 26px 28px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div style="display: inline-flex; align-items: center; gap: 9px; padding: 8px 15px; background: #0B0B0B; border-radius: 22px;">
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: #E0524A; animation: livepulse 1.4s ease-in-out infinite;"></div>
+                <span style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #fff;">SPEAKING</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #8A8A86;">BATCHED · ANSWERING 12</span>
+                <div style="width: 150px; height: 4px; border-radius: 3px; background: #E4E4DF; overflow: hidden;"><div style="width: 66%; height: 100%; background: #0B0B0B;"></div></div>
+                <span style="font: 500 11px 'JetBrains Mono', monospace; color: #9A9A96;">next round 0:24</span>
+              </div>
+            </div>
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+              <div style="position: relative; width: 272px; height: 360px;">
+                <image-slot id="broadcast-avatar" shape="rounded" radius="18" placeholder="Drop avatar" style="width: 100%; height: 100%;"></image-slot>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 16px 14px; background: linear-gradient(to top, rgba(11,11,11,0.85), rgba(11,11,11,0)); border-radius: 0 0 18px 18px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 2px;"><div style="width:3px;height:9px;background:#fff;border-radius:2px;transform-origin:center;animation:wf 0.9s 0s ease-in-out infinite;"></div><div style="width:3px;height:9px;background:#fff;border-radius:2px;transform-origin:center;animation:wf 0.9s 0.2s ease-in-out infinite;"></div><div style="width:3px;height:9px;background:#fff;border-radius:2px;transform-origin:center;animation:wf 0.9s 0.4s ease-in-out infinite;"></div></div>
+                    <span style="font: 500 9px 'JetBrains Mono', monospace; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);">LIVE CAPTION</span>
+                  </div>
+                  <span style="font: 500 13px/1.4 'Space Grotesk', sans-serif; color: #fff;">"…they have three hearts and blue blood — one of you asked about that."</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="display: flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 12px; background: #0B0B0B;">
+                <span style="font: 500 14px 'Space Grotesk', sans-serif; color: #fff;">+ Add Script</span>
+              </div>
+              <div style="display: flex; align-items: center; height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid #DBDBD6; background: #fff;">
+                <span style="font: 500 14px 'Space Grotesk', sans-serif; color: #0B0B0B;">Mute agent</span>
+              </div>
+              <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 12px; background: #EAEAE6;">
+                <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: #6B6B68;">BATCHED 30s</span>
+              </div>
+            </div>
+          </div>
+          <!-- RAIL -->
+          <div style="width: 324px; border-left: 1px solid #E6E6E2; background: #fff; display: flex; flex-direction: column;">
+            <div style="padding: 20px 22px; border-bottom: 1px solid #EEEEEA; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 9px;">
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: #2FA46B;"></div>
+                <span style="font: 500 12px 'JetBrains Mono', monospace; color: #6B6B68;">24 WATCHING</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #E0524A; animation: livepulse 1.6s ease-in-out infinite;"></div>
+                <span style="font: 600 12px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #0B0B0B;">LIVE</span>
+              </div>
+            </div>
+            <div style="flex: 1; padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; overflow: hidden;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #B0B0AB;">USER 088</span>
+                <div style="align-self: flex-start; background: #F4F4F1; border-radius: 4px 14px 14px 14px; padding: 10px 14px; font: 400 14px 'Space Grotesk', sans-serif; color: #0B0B0B;">Hello!</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #B0B0AB;">USER 123</span>
+                <div style="align-self: flex-start; background: #F4F4F1; border-radius: 4px 14px 14px 14px; padding: 10px 14px; font: 400 14px/1.4 'Space Grotesk', sans-serif; color: #0B0B0B; max-width: 88%;">Tell us an interesting fact about this!</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #B0B0AB;">USER 41</span>
+                <div style="align-self: flex-start; background: #F4F4F1; border-radius: 4px 14px 14px 14px; padding: 10px 14px; font: 400 14px 'Space Grotesk', sans-serif; color: #0B0B0B;">Where's it based?</div>
+              </div>
+              <div style="margin-top: auto; display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 20px; background: #F4F4F1;">
+                <div style="display: flex; gap: 3px;"><div style="width:5px;height:5px;border-radius:50%;background:#0B0B0B;animation:think 1.2s 0s infinite;"></div><div style="width:5px;height:5px;border-radius:50%;background:#0B0B0B;animation:think 1.2s 0.2s infinite;"></div><div style="width:5px;height:5px;border-radius:50%;background:#0B0B0B;animation:think 1.2s 0.4s infinite;"></div></div>
+                <span style="font: 500 11px 'JetBrains Mono', monospace; color: #6B6B68;">agent is answering</span>
+              </div>
+            </div>
+            <div style="border-top: 1px solid #EEEEEA; padding: 16px; display: flex; gap: 10px; align-items: center;">
+              <div style="flex: 1; height: 42px; display: flex; align-items: center; padding: 0 14px; border-radius: 11px; background: #F4F4F1;">
+                <span style="font: 400 14px 'Space Grotesk', sans-serif; color: #A6A6A1;">Message…</span>
+              </div>
+              <div style="width: 42px; height: 42px; border-radius: 11px; background: #0B0B0B; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">→</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRAME B-2 : PARTICIPANT · SEQUENTIAL · THINKING -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.14em; color: #9A9A96;">PARTICIPANT VIEW · SEQUENTIAL MODE · THINKING</span>
+        <div style="position: relative; width: 1000px; height: 620px; border-radius: 24px; background: #fff; border: 1px solid #E2E2DE; box-shadow: 0 34px 70px -34px rgba(0,0,0,0.30); overflow: hidden; display: flex;">
+          <div style="flex: 1; position: relative; background: #F4F4F1; display: flex; flex-direction: column; padding: 26px 28px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div style="display: inline-flex; align-items: center; gap: 9px; padding: 8px 15px; background: #fff; border: 1px solid #E2E2DE; border-radius: 22px;">
+                <div style="display: flex; gap: 3px;"><div style="width:5px;height:5px;border-radius:50%;background:#3E6FE0;animation:think 1.2s 0s infinite;"></div><div style="width:5px;height:5px;border-radius:50%;background:#3E6FE0;animation:think 1.2s 0.2s infinite;"></div><div style="width:5px;height:5px;border-radius:50%;background:#3E6FE0;animation:think 1.2s 0.4s infinite;"></div></div>
+                <span style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #0B0B0B;">THINKING</span>
+              </div>
+              <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #8A8A86;">SEQUENTIAL · Q3 OF 7</span>
+            </div>
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+              <div style="position: relative; width: 272px; height: 360px; border-radius: 18px; background: repeating-linear-gradient(45deg, #EAEAE5, #EAEAE5 9px, #F1F1ED 9px, #F1F1ED 18px); display: flex; align-items: center; justify-content: center;">
+                <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.1em; color: #B4B4AF;">AVATAR VIDEO</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 12px; background: #EAEAE6; align-self: flex-start;">
+              <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: #6B6B68;">ANSWERS PLAY IN ORDER</span>
+            </div>
+          </div>
+          <div style="width: 324px; border-left: 1px solid #E6E6E2; background: #fff; display: flex; flex-direction: column;">
+            <div style="padding: 20px 22px; border-bottom: 1px solid #EEEEEA; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 9px;">
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: #2FA46B;"></div>
+                <span style="font: 500 12px 'JetBrains Mono', monospace; color: #6B6B68;">24 WATCHING</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #E0524A; animation: livepulse 1.6s ease-in-out infinite;"></div>
+                <span style="font: 600 12px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #0B0B0B;">LIVE</span>
+              </div>
+            </div>
+            <!-- pinned queue -->
+            <div style="padding: 16px 22px; border-bottom: 1px solid #EEEEEA; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #9A9A96;">IN QUEUE</span>
+                <span style="font: 500 10px 'JetBrains Mono', monospace; color: #B0B0AB;">7 waiting</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font: 600 11px 'JetBrains Mono', monospace; color: #2FA46B; width: 30px;">NOW</span>
+                <span style="flex: 1; font: 400 13px 'Space Grotesk', sans-serif; color: #6B6B68; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User 088 — ETA on beta?</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 10px; background: #EEF2FD; border: 1px solid #DCE4FA;">
+                <span style="font: 600 11px 'JetBrains Mono', monospace; color: #3E6FE0; width: 30px;">02</span>
+                <span style="flex: 1; font: 500 13px 'Space Grotesk', sans-serif; color: #0B0B0B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">You — pricing?</span>
+                <span style="font: 500 10px 'JetBrains Mono', monospace; color: #3E6FE0;">~40s</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font: 600 11px 'JetBrains Mono', monospace; color: #B0B0AB; width: 30px;">03</span>
+                <span style="flex: 1; font: 400 13px 'Space Grotesk', sans-serif; color: #A6A6A1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User 12 — video?</span>
+              </div>
+            </div>
+            <div style="flex: 1; padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; overflow: hidden;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #B0B0AB;">USER 088</span>
+                <div style="align-self: flex-start; background: #F4F4F1; border-radius: 4px 14px 14px 14px; padding: 10px 14px; font: 400 14px 'Space Grotesk', sans-serif; color: #0B0B0B;">Hello!</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #B0B0AB;">YOU</span>
+                <div style="background: #0B0B0B; border-radius: 14px 4px 14px 14px; padding: 10px 14px; font: 400 14px 'Space Grotesk', sans-serif; color: #fff;">How does pricing scale?</div>
+              </div>
+            </div>
+            <div style="border-top: 1px solid #EEEEEA; padding: 16px; display: flex; gap: 10px; align-items: center;">
+              <div style="flex: 1; height: 42px; display: flex; align-items: center; padding: 0 14px; border-radius: 11px; background: #F4F4F1;">
+                <span style="font: 400 14px 'Space Grotesk', sans-serif; color: #A6A6A1;">Ask a question…</span>
+              </div>
+              <div style="width: 42px; height: 42px; border-radius: 11px; background: #0B0B0B; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;">→</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B EDGE STATES -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.14em; color: #9A9A96;">EDGE STATES</span>
+        <div style="display: flex; gap: 22px;">
+          <div style="width: 312px; height: 196px; border-radius: 20px; background: #F4F4F1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; border: 3px solid #E1E1DC; border-top-color: #0B0B0B; animation: spin 0.9s linear infinite;"></div>
+            <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #6B6B68;">CONNECTING TO CHANNEL</span>
+          </div>
+          <div style="width: 312px; height: 196px; border-radius: 20px; background: #F4F4F1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center;">
+            <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #B0B0AB;">NO MESSAGES YET</span>
+            <span style="font: 500 17px 'Space Grotesk', sans-serif; color: #0B0B0B;">Say hello to start</span>
+            <span style="font: 400 13px 'Space Grotesk', sans-serif; color: #8A8A86;">Be the first to ask a question.</span>
+          </div>
+          <div style="width: 312px; height: 196px; border-radius: 20px; background: #F4F4F1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center;">
+            <div style="width: 9px; height: 9px; border-radius: 50%; background: #E0524A; animation: livepulse 1.2s ease-in-out infinite;"></div>
+            <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #0B0B0B;">CONNECTION LOST</span>
+            <span style="font: 400 13px 'Space Grotesk', sans-serif; color: #8A8A86;">Reconnecting…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  makeWave(active) {
+    const heights = [0.4, 0.72, 1, 0.55, 0.85, 0.5, 1, 0.66, 0.4, 0.9, 0.6, 1, 0.5, 0.78, 0.45];
+    const bars = heights.map((h, i) =>
+      React.createElement('div', {
+        key: i,
+        style: {
+          width: '4px',
+          height: '40px',
+          borderRadius: '2px',
+          background: active ? '#0B0B0B' : '#CBCBC6',
+          transformOrigin: 'center',
+          transform: `scaleY(${active ? h : 0.16})`,
+          animation: active ? `wf 0.9s ${(i % 5) * 0.12}s ease-in-out infinite` : 'none'
+        }
+      })
+    );
+    return React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '3px', height: '40px' } }, bars);
+  }
+  renderVals() {
+    return {
+      waveActive: this.makeWave(true),
+      waveMuted: this.makeWave(false)
+    };
+  }
+}
+</script>
+</body>
+</html>

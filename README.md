@@ -1,0 +1,148 @@
+# AI Avatar Stream
+
+A 1-to-many live room where a host goes live with an AI avatar (driven by [Agora's Conversational AI Engine](https://docs.agora.io/en/conversational-ai)), and any number of guests join to chat and ask questions. The avatar answers the room in one of two **response modes** — **Batched** (collect questions for a window, then answer the whole room at once) or **Sequential** (queue questions and answer them one at a time). A host creates a channel from the setup screen, gets a shareable **guest link** and a private **host link**, and unlimited guests can join. Multiple channels run independently in parallel.
+
+This is a **reference / demo project** intended to be cloned and customized.
+
+---
+
+## Quick start
+
+### Prerequisites
+
+- **Node.js 20 or newer**
+- **An Agora account** with a project that has:
+  - The **Conversational AI Engine** enabled
+  - Token authentication enabled (so we can mint RTC + RTM tokens)
+- *(Optional)* An **Anam** or **HeyGen** account for a talking-head avatar
+- *(Optional)* A **Microsoft Azure** Speech account if you don't want Agora's preset TTS
+
+### Setup
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Create your local env file from the template
+cp .env.example .env.local
+
+# 3. Fill in your real Agora credentials (see "Environment variables" below).
+
+# 4. Run the dev server
+npm run dev
+```
+
+The app is available at **http://localhost:4000**.
+
+| Route | Who it's for | What it does |
+|---|---|---|
+| `/` | Host / operator | **Setup screen**: name the channel, optionally give the avatar a topic to be knowledgeable about, pick a response mode (Batched / Sequential) and, for batched, a collection window (10/20/30s). **Create & go live** → server returns a guest link + a private host link and redirects to the host page. |
+| `/manage/[hostToken]` | Host | Live console: the avatar goes live automatically and greets the room when the host connects. The host can broadcast a scripted line ("+ Add Script" → **Speak**), mute the agent locally, ask questions, and copy the guest link. |
+| `/stream/[id]` | Guests | Enter a name + email, join the room, watch the avatar, and ask questions in the shared chat. Each new guest is welcomed by name (guests arriving within a few seconds are welcomed together). Unlimited guests per channel. |
+
+### Running a stream end-to-end
+
+1. Open `/`. Name the channel, pick **Batched** or **Sequential** (and a window for batched), then **Create & go live** — you're redirected to `/manage/<hostToken>` and the avatar joins.
+2. Copy the **guest link** (`/stream/<id>`) from the host toolbar and share it. Open it in another tab/device to play a guest.
+3. Each guest enters a name + email and joins.
+4. Guests ask questions in the chat:
+   - **Sequential** — questions queue up; the avatar answers them one at a time, in order.
+   - **Batched** — questions collect during each window; when it closes, the avatar answers the whole batch in one flowing, host-style reply, then a fresh window opens.
+5. Everything the avatar says appears in the chat feed — greeting, guest welcomes, scripted lines, and answers (with a live word-by-word caption on the stage while it speaks, and a typing indicator in the chat). Answers slot in directly under the question(s) they answer.
+6. The host can broadcast a scripted line at any time with **+ Add Script → Speak**.
+7. Each browser tab is its own participant — open the guest URL in several tabs with different names to simulate a room.
+
+---
+
+## Environment variables
+
+Required:
+
+| Var | What it is |
+|---|---|
+| `AGORA_APP_ID` | Your Agora project App ID |
+| `NEXT_PUBLIC_AGORA_APP_ID` | Same App ID, exposed to the browser for the RTC/RTM SDKs |
+| `AGORA_USERNAME` | Agora REST API customer key |
+| `AGORA_PASSWORD` | Agora REST API customer secret |
+| `AGORA_APP_CERTIFICATE` | App certificate (needed for token generation; enable token auth in the Agora Console) |
+| `AGORA_PRESET` | Comma-separated ASR + LLM + TTS preset (default: `deepgram_nova_3,openai_gpt_4o_mini,minimax_speech_2_6_turbo`) |
+
+Optional (avatar):
+
+| Var | What it is |
+|---|---|
+| `AVATAR_AGORA_UID` | RTC UID the avatar's video track publishes on (default `102`) |
+| `ANAM_API_KEY`, `ANAM_AVATAR_ID` | If using Anam as the avatar provider |
+| `HEYGEN_API_KEY`, `HEYGEN_AVATAR_ID` | If using HeyGen instead |
+
+Optional (custom TTS vendor — overrides the TTS portion of `AGORA_PRESET`):
+
+| Var | What it is |
+|---|---|
+| `AGORA_PRESET_ASR_LLM` | When using a custom TTS, keep ASR + LLM here (e.g. `deepgram_nova_3,openai_gpt_4o_mini`) |
+| `TTS_KEY`, `TTS_REGION`, `TTS_VOICE_NAME` | Microsoft Azure Speech |
+| `MINIMAX_VOICE_ID` | Voice ID when using the Minimax preset (default `English_captivating_female1`) |
+| `TTS_SPEED` | TTS playback speed multiplier (default `1.0`) |
+
+`.env.example` has the same list with inline comments — use it as the source of truth when filling in `.env.local`.
+
+---
+
+## How the demo works (in 60 seconds)
+
+- Each channel is identified by an 8-character `id`. The id doubles as the Agora RTC + RTM channel name, so there's no database — channel state lives in an in-memory `Map` on the server.
+- The host has a separate, unguessable 32-character `hostToken` that authorizes the **Start / Stop / Speak** REST calls. Guests can't derive the host URL from the guest URL.
+- The browser joins an Agora **RTC** channel (in `mode: 'live'`) to hear the avatar's voice and see its video. Guests are invisible `audience`; the host joins as a broadcaster (publishing nothing) so the agent detects its arrival and speaks the native `greeting_message`. Only the agent publishes media — Agora supports many subscribers per channel cheaply.
+- The browser also joins an Agora **RTM** channel for two things: receiving live channel-state broadcasts from the server (chat feed, queue, presence, agent state), and — via the vendored **Conversational AI toolkit** — receiving agent-state events that drive the speech handoff plus live transcripts that drive the word-by-word caption.
+- The Next.js server holds each channel's state and calls Agora's **Think** REST endpoint to answer questions (sequential: one per question; batched: one combined prompt per window) and **Speak** for the host's scripted lines and per-guest welcomes. A server-side speech lock guarantees the avatar answers one thing at a time.
+- The avatar's answers land in the shared chat via Agora's **conversation history** REST API (fetched after each utterance, deduped by `turn_id`), so every participant — including late joiners — sees identical history.
+
+---
+
+## Project layout
+
+```
+app/                                  # Next.js App Router
+  page.jsx                            Setup screen (create a channel)
+  stream/[id]/page.jsx                Guest room (join gate → live stream)
+  manage/[hostToken]/page.jsx         Host console
+  components/stream/                  StreamScreen, StreamStage, ChatRail, StreamParts
+  hooks/                              useChannel(channelId, hostToken, creds) + useAgora
+  api/channels/                       POST create / GET list, plus [id]/* and by-host-token/[hostToken]
+  api/agents/                         Agora platform-level helpers (list / stop / stop-all)
+  lib/conversational-ai-api/          Vendored Agora Conversational AI toolkit (TypeScript)
+  globals.css                         Design tokens (light / editorial theme)
+
+lib/                                  # Server-side modules (Node)
+  channelManager.js                   Per-channel orchestrator: createChannel, getChannel, deleteChannel, listChannels
+  agoraService.js                     Agora REST wrapper (joinAgent, speak, think, publishChannelMessage, …)
+  tokenService.js                     RTC + RTM token generation + per-client credential minting
+```
+
+---
+
+## Troubleshooting
+
+**The avatar joins but never answers questions.**
+The agent's RTC token must include RTM privileges (`buildTokenWithRtm2`) so it can publish presence + `state.speaking` events. Without them the client can't tell the server the agent stopped speaking, and the speech lock never releases — so the sequential queue never advances / the next batch window never opens.
+
+**Avatar video doesn't appear (only audio works).**
+With the **Minimax** TTS preset + **Anam** avatar, the TTS must be at `audio_setting.sample_rate: 24000`. Anam consumes 24 kHz; Minimax defaults to 32 kHz and the avatar silently drops the stream. Set in `lib/agoraService.js`.
+
+**The avatar speaks a non-English language.**
+TTS vendors auto-detect language. Force English via the relevant config field: Minimax `language_boost: 'English'`, OpenAI `instructions: 'Always speak in English…'`.
+
+**"N WATCHING" is wrong / zero.**
+Presence is a server-side heartbeat: each guest POSTs `/api/channels/[id]/presence` every 15s and entries expire after 30s. If a guest tab is closed the count drops within 30s. It does not use raw RTM occupancy (which would double-count the two RTM identities each viewer holds).
+
+**"Invalid host link" on /manage/<...>.**
+The channel was evicted from the in-memory map (30 min after being stopped, or 2 hours idle in IDLE). Create a new one from `/`.
+
+**Port 4000 already in use.**
+Change the port in `package.json`'s `dev` script or run `PORT=4001 npm run dev`.
+
+---
+
+## License
+
+This is a demo / reference project, provided as-is without warranty. You are responsible for your own Agora, Anam/HeyGen, and TTS vendor accounts, credentials, and usage costs.

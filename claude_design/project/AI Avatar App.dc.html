@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: #DEDEDA; font-family: 'Space Grotesk', sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  input { font-family: 'Space Grotesk', sans-serif; }
+  @keyframes wf { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+  @keyframes livepulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes think { 0%, 80%, 100% { opacity: 0.2; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+  image-slot { display: block; }
+</style>
+<script src="image-slot.js"></script>
+</helmet>
+
+<div style="position: relative; min-height: 100vh; display: flex; align-items: stretch; justify-content: center;">
+
+  <!-- ===================== PROTOTYPE TOOLBAR ===================== -->
+  <div style="position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 90; display: flex; align-items: center; gap: 14px; padding: 8px 10px 8px 16px; background: rgba(255,255,255,0.86); backdrop-filter: blur(12px); border: 1px solid #D6D6D1; border-radius: 999px; box-shadow: 0 12px 30px -14px rgba(0,0,0,0.35);">
+    <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #9A9A96;">PROTOTYPE</span>
+    <div style="display: flex; gap: 2px; padding: 2px; background: #F0F0EC; border-radius: 10px;">
+      <button style="{{ roleHostSeg }}" onClick="{{ setHost }}">HOST</button>
+      <button style="{{ roleGuestSeg }}" onClick="{{ setGuest }}">GUEST</button>
+    </div>
+    <div style="display: flex; gap: 2px; padding: 2px; background: #F0F0EC; border-radius: 10px;">
+      <button style="{{ modeBatchedSeg }}" onClick="{{ pickBatched }}">BATCHED</button>
+      <button style="{{ modeSeqSeg }}" onClick="{{ pickSequential }}">SEQUENTIAL</button>
+    </div>
+    <div style="display: flex; gap: 2px; padding: 2px; background: #F0F0EC; border-radius: 10px;">
+      <button style="{{ viewDeskSeg }}" onClick="{{ setDesktop }}">DESKTOP</button>
+      <button style="{{ viewMobSeg }}" onClick="{{ setMobile }}">MOBILE</button>
+    </div>
+    <button style="padding: 7px 14px; border: none; border-radius: 999px; background: #0B0B0B; color: #fff; cursor: pointer; font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.04em;" onClick="{{ resetDemo }}">RESET</button>
+  </div>
+
+  <!-- ===================== APP FRAME ===================== -->
+  <div style="{{ frameStyle }}">
+
+    <!-- ---------- SETUP SCREEN ---------- -->
+    <sc-if value="{{ showSetup }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 100%; min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 96px 24px 48px; background: #fff;">
+        <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; gap: 30px;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.16em; color: #9A9A96;">NEW CHANNEL</span>
+            <h1 style="margin: 0; font: 400 44px/1.05 'Instrument Serif', serif; letter-spacing: -0.01em; color: #0B0B0B;">Set up your stream</h1>
+            <p style="margin: 0; font: 400 15px/1.55 'Space Grotesk', sans-serif; color: #6B6B68;">Configure how the avatar handles the room before you go live.</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #6B6B68;">CHANNEL NAME</label>
+            <input value="{{ channel }}" onChange="{{ onChannel }}" style="height: 52px; padding: 0 18px; border: 1px solid #E2E2DE; border-radius: 13px; font: 400 16px 'Space Grotesk', sans-serif; color: #0B0B0B; background: #fff; outline: none;" />
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <label style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #6B6B68;">RESPONSE MODE</label>
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+              <button style="{{ tileBatched }}" onClick="{{ pickBatched }}">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font: 600 16px 'Space Grotesk', sans-serif; color: #0B0B0B;">Batched</span>
+                  <div style="{{ dotBatched }}"></div>
+                </div>
+                <span style="font: 400 13px/1.45 'Space Grotesk', sans-serif; color: #6B6B68;">Collects everything for a set window, then answers the whole room at once.</span>
+              </button>
+              <button style="{{ tileSequential }}" onClick="{{ pickSequential }}">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font: 600 16px 'Space Grotesk', sans-serif; color: #0B0B0B;">Sequential</span>
+                  <div style="{{ dotSequential }}"></div>
+                </div>
+                <span style="font: 400 13px/1.45 'Space Grotesk', sans-serif; color: #6B6B68;">Queues questions and answers them one by one, in order.</span>
+              </button>
+            </div>
+          </div>
+
+          <sc-if value="{{ isBatched }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <label style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #6B6B68;">COLLECTION WINDOW</label>
+              <div style="display: flex; gap: 10px;">
+                <button style="{{ t15 }}" onClick="{{ set15 }}">15s</button>
+                <button style="{{ t30 }}" onClick="{{ set30 }}">30s</button>
+                <button style="{{ t60 }}" onClick="{{ set60 }}">60s</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 4px;">
+            <button style="height: 56px; border: none; border-radius: 14px; background: #0B0B0B; color: #fff; cursor: pointer; font: 600 16px 'Space Grotesk', sans-serif;" onClick="{{ startAsHost }}">Create &amp; go live</button>
+            <button style="align-self: center; background: none; border: none; cursor: pointer; font: 500 14px 'Space Grotesk', sans-serif; color: #6B6B68;" onClick="{{ gotoJoin }}">Joining as a guest? Enter here →</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- JOIN SCREEN ---------- -->
+    <sc-if value="{{ showJoin }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 100%; min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 96px 24px 48px; background: #fff;">
+        <div style="width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 26px;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.16em; color: #9A9A96;">JOIN CHANNEL</span>
+            <h1 style="margin: 0; font: 400 40px/1.05 'Instrument Serif', serif; letter-spacing: -0.01em; color: #0B0B0B;">You're joining {{ channel }}</h1>
+            <p style="margin: 0; font: 400 15px/1.55 'Space Grotesk', sans-serif; color: #6B6B68;">Tell us who you are so the host knows who's asking.</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #6B6B68;">YOUR NAME</label>
+            <input value="{{ name }}" onChange="{{ onName }}" placeholder="Ada Lovelace" style="height: 52px; padding: 0 18px; border: 1px solid #E2E2DE; border-radius: 13px; font: 400 16px 'Space Grotesk', sans-serif; color: #0B0B0B; background: #fff; outline: none;" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #6B6B68;">EMAIL</label>
+            <input value="{{ email }}" onChange="{{ onEmail }}" placeholder="ada@example.com" style="height: 52px; padding: 0 18px; border: 1px solid #E2E2DE; border-radius: 13px; font: 400 16px 'Space Grotesk', sans-serif; color: #0B0B0B; background: #fff; outline: none;" />
+            <span style="font: 400 12px 'Space Grotesk', sans-serif; color: #9A9A96;">Only visible to the host. We won't post anything.</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 4px;">
+            <button style="{{ joinBtnStyle }}" onClick="{{ joinChannel }}">Join channel</button>
+            <button style="align-self: center; background: none; border: none; cursor: pointer; font: 500 14px 'Space Grotesk', sans-serif; color: #6B6B68;" onClick="{{ backSetup }}">← Back to setup</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ---------- CONNECTING ---------- -->
+    <sc-if value="{{ showConnecting }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #fff;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid #EAEAE6; border-top-color: #0B0B0B; animation: spin 0.9s linear infinite;"></div>
+        <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #6B6B68;">CONNECTING TO {{ channelUpper }}</span>
+      </div>
+    </sc-if>
+
+    <!-- ---------- STREAM · DESKTOP ---------- -->
+    <sc-if value="{{ showStreamD }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 100%; flex: 1; min-height: 0; display: flex; position: relative;">
+        <!-- STAGE -->
+        <div style="flex: 1; position: relative; background: #F4F4F1; display: flex; flex-direction: column; padding: 26px 28px; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="display: inline-flex; align-items: center; gap: 9px; padding: 8px 15px; background: {{ statusBg }}; border: {{ statusBorder }}; border-radius: 22px;">
+              <div style="{{ statusDot }}"></div>
+              <span style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: {{ statusText }};">{{ agentLabel }}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+              <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #8A8A86;">{{ hudTop }}</span>
+              <div style="width: 150px; height: 4px; border-radius: 3px; background: #E4E4DF; overflow: hidden;"><div style="width: {{ hudProgress }}; height: 100%; background: #0B0B0B; transition: width 0.9s linear;"></div></div>
+              <span style="font: 500 11px 'JetBrains Mono', monospace; color: #9A9A96;">{{ hudSub }}</span>
+            </div>
+          </div>
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;">
+            <div style="position: relative; width: 272px; max-width: 100%; height: 360px;">
+              <image-slot id="app-avatar" shape="rounded" radius="18" placeholder="Drop avatar" style="width: 100%; height: 100%;"></image-slot>
+              <sc-if value="{{ hasCaption }}" hint-placeholder-val="{{ true }}">
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 32px 16px 14px; background: linear-gradient(to top, rgba(11,11,11,0.86), rgba(11,11,11,0)); border-radius: 0 0 18px 18px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <div style="display: flex; gap: 2px;"><div style="width:3px;height:9px;background:#fff;border-radius:2px;transform-origin:center;animation:wf 0.9s 0s ease-in-out infinite;"></div><div style="width:3px;height:9px;background:#fff;border-radius:2px;transform-origin:center;animation:wf 0.9s 0.2s ease-in-out infinite;"></div><div style="width:3px;height:9px;background:#fff;border-radius:2px;transform-origin:center;animation:wf 0.9s 0.4s ease-in-out infinite;"></div></div>
+                    <span style="font: 500 9px 'JetBrains Mono', monospace; letter-spacing: 0.1em; color: rgba(255,255,255,0.7);">LIVE CAPTION</span>
+                  </div>
+                  <span style="font: 500 13px/1.4 'Space Grotesk', sans-serif; color: #fff;">{{ caption }}</span>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          <!-- host controls -->
+          <sc-if value="{{ isHost }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <sc-if value="{{ scriptOpen }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input value="{{ scriptText }}" onChange="{{ onScript }}" placeholder="Type what the avatar should say…" style="flex: 1; height: 44px; padding: 0 16px; border: 1px solid #DBDBD6; border-radius: 12px; font: 400 14px 'Space Grotesk', sans-serif; background: #fff; outline: none;" />
+                  <button style="height: 44px; padding: 0 20px; border: none; border-radius: 12px; background: #0B0B0B; color: #fff; cursor: pointer; font: 500 14px 'Space Grotesk', sans-serif;" onClick="{{ sendScript }}">Speak</button>
+                </div>
+              </sc-if>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <button style="display: flex; align-items: center; height: 44px; padding: 0 20px; border: none; border-radius: 12px; background: #0B0B0B; color: #fff; cursor: pointer; font: 500 14px 'Space Grotesk', sans-serif;" onClick="{{ toggleScript }}">+ Add Script</button>
+                <button style="{{ muteBtnStyle }}" onClick="{{ toggleMute }}">{{ muteLabel }}</button>
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 12px; background: #EAEAE6;">
+                  <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: #6B6B68;">{{ modeChip }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <!-- RAIL -->
+        <div style="width: 340px; border-left: 1px solid #E6E6E2; background: #fff; display: flex; flex-direction: column;">
+          <div style="padding: 20px 22px; border-bottom: 1px solid #EEEEEA; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 9px;">
+              <div style="width: 7px; height: 7px; border-radius: 50%; background: #2FA46B;"></div>
+              <span style="font: 500 12px 'JetBrains Mono', monospace; color: #6B6B68;">{{ presence }} WATCHING</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: #E0524A; animation: livepulse 1.6s ease-in-out infinite;"></div>
+              <span style="font: 600 12px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #0B0B0B;">LIVE</span>
+            </div>
+          </div>
+          <!-- queue (sequential) -->
+          <sc-if value="{{ isSequential }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 16px 22px; border-bottom: 1px solid #EEEEEA; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #9A9A96;">IN QUEUE</span>
+                <span style="font: 500 10px 'JetBrains Mono', monospace; color: #B0B0AB;">{{ queueCount }} waiting</span>
+              </div>
+              <sc-for list="{{ queueRows }}" as="q" hint-placeholder-count="3">
+                <div style="{{ q.rowStyle }}">
+                  <span style="{{ q.posStyle }}">{{ q.pos }}</span>
+                  <span style="{{ q.textStyle }}">{{ q.label }}</span>
+                  <sc-if value="{{ q.isYou }}" hint-placeholder-val="{{ true }}"><span style="font: 500 10px 'JetBrains Mono', monospace; color: #3E6FE0;">~{{ q.eta }}s</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <!-- messages -->
+          <div style="flex: 1; padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto;">
+            <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="margin: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+                <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #B0B0AB;">NO MESSAGES YET</span>
+                <span style="font: 400 14px 'Space Grotesk', sans-serif; color: #8A8A86;">Say hello to start the conversation.</span>
+              </div>
+            </sc-if>
+            <sc-for list="{{ messageRows }}" as="m" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 4px; align-items: {{ m.align }};">
+                <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #B0B0AB;">{{ m.user }}</span>
+                <div style="{{ m.bubbleStyle }}">{{ m.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <!-- composer -->
+          <div style="border-top: 1px solid #EEEEEA; padding: 16px; display: flex; gap: 10px; align-items: center;">
+            <input value="{{ composer }}" onChange="{{ onComposer }}" onKeyDown="{{ onComposerKey }}" placeholder="{{ composerPlaceholder }}" style="flex: 1; height: 42px; padding: 0 14px; border: none; border-radius: 11px; background: #F4F4F1; font: 400 14px 'Space Grotesk', sans-serif; color: #0B0B0B; outline: none;" />
+            <button style="width: 42px; height: 42px; border: none; border-radius: 11px; background: #0B0B0B; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; cursor: pointer;" onClick="{{ sendMessage }}">→</button>
+          </div>
+        </div>
+        <!-- lost banner -->
+        <sc-if value="{{ isLost }}" hint-placeholder-val="{{ true }}">
+          <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 10px 18px; background: #0B0B0B; border-radius: 999px; z-index: 20;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #E0524A; animation: livepulse 1.1s ease-in-out infinite;"></div>
+            <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.04em; color: #fff;">Connection lost — reconnecting…</span>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ---------- STREAM · MOBILE ---------- -->
+    <sc-if value="{{ showStreamM }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 100%; flex: 1; display: flex; flex-direction: column; background: #fff; position: relative; min-height: 0;">
+        <!-- app bar -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #EEEEEA; flex-shrink: 0;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: #2FA46B;"></div>
+            <span style="font: 500 11px 'JetBrains Mono', monospace; color: #6B6B68;">{{ presence }}</span>
+          </div>
+          <span style="font: 600 14px 'Space Grotesk', sans-serif; color: #0B0B0B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55%;">{{ channel }}</span>
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: #E0524A; animation: livepulse 1.6s ease-in-out infinite;"></div>
+            <span style="font: 600 11px 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: #0B0B0B;">LIVE</span>
+          </div>
+        </div>
+        <!-- stage -->
+        <div style="position: relative; background: #F4F4F1; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: {{ statusBg }}; border: {{ statusBorder }}; border-radius: 20px;">
+              <div style="{{ statusDot }}"></div>
+              <span style="font: 600 10px 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: {{ statusText }};">{{ agentLabel }}</span>
+            </div>
+            <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #8A8A86;">{{ hudTop }} · {{ hudSub }}</span>
+          </div>
+          <div style="display: flex; justify-content: center;">
+            <div style="position: relative; width: 168px; height: 220px;">
+              <image-slot id="app-avatar" shape="rounded" radius="16" placeholder="Drop avatar" style="width: 100%; height: 100%;"></image-slot>
+              <sc-if value="{{ hasCaption }}" hint-placeholder-val="{{ true }}">
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 12px 10px; background: linear-gradient(to top, rgba(11,11,11,0.86), rgba(11,11,11,0)); border-radius: 0 0 16px 16px;">
+                  <span style="font: 500 11px/1.35 'Space Grotesk', sans-serif; color: #fff;">{{ caption }}</span>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          <sc-if value="{{ isHost }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; gap: 10px;">
+              <button style="flex: 1; height: 42px; border: none; border-radius: 11px; background: #0B0B0B; color: #fff; cursor: pointer; font: 500 13px 'Space Grotesk', sans-serif;" onClick="{{ toggleScript }}">+ Add Script</button>
+              <button style="{{ muteBtnStyleM }}" onClick="{{ toggleMute }}">{{ muteLabel }}</button>
+            </div>
+          </sc-if>
+        </div>
+        <!-- sequential queue strip -->
+        <sc-if value="{{ isSequential }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #EEEEEA; background: #FBFBF9; flex-shrink: 0;">
+            <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.1em; color: #9A9A96;">QUEUE</span>
+            <span style="font: 500 12px 'Space Grotesk', sans-serif; color: #0B0B0B;">{{ queueCount }} waiting</span>
+            <span style="{{ posPillStyle }}">{{ posLabel }}</span>
+          </div>
+        </sc-if>
+        <!-- messages -->
+        <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0;">
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="margin: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+              <span style="font: 500 11px 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: #B0B0AB;">NO MESSAGES YET</span>
+              <span style="font: 400 14px 'Space Grotesk', sans-serif; color: #8A8A86;">Say hello to start.</span>
+            </div>
+          </sc-if>
+          <sc-for list="{{ messageRows }}" as="m" hint-placeholder-count="3">
+            <div style="display: flex; flex-direction: column; gap: 4px; align-items: {{ m.align }};">
+              <span style="font: 500 10px 'JetBrains Mono', monospace; letter-spacing: 0.08em; color: #B0B0AB;">{{ m.user }}</span>
+              <div style="{{ m.bubbleStyle }}">{{ m.text }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <!-- composer -->
+        <div style="border-top: 1px solid #EEEEEA; padding: 14px 16px; display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
+          <sc-if value="{{ scriptOpen }}" hint-placeholder-val="{{ true }}">
+            <input value="{{ scriptText }}" onChange="{{ onScript }}" placeholder="What should the avatar say?" style="flex: 1; height: 44px; padding: 0 14px; border: 1px solid #DBDBD6; border-radius: 11px; background: #fff; font: 400 14px 'Space Grotesk', sans-serif; outline: none;" />
+            <button style="height: 44px; padding: 0 18px; border: none; border-radius: 11px; background: #0B0B0B; color: #fff; cursor: pointer; font: 500 14px 'Space Grotesk', sans-serif;" onClick="{{ sendScript }}">Speak</button>
+          </sc-if>
+          <sc-if value="{{ composerVisible }}" hint-placeholder-val="{{ true }}">
+            <input value="{{ composer }}" onChange="{{ onComposer }}" onKeyDown="{{ onComposerKey }}" placeholder="{{ composerPlaceholder }}" style="flex: 1; height: 44px; padding: 0 14px; border: none; border-radius: 11px; background: #F4F4F1; font: 400 14px 'Space Grotesk', sans-serif; color: #0B0B0B; outline: none;" />
+            <button style="width: 44px; height: 44px; border: none; border-radius: 11px; background: #0B0B0B; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; cursor: pointer;" onClick="{{ sendMessage }}">→</button>
+          </sc-if>
+        </div>
+        <sc-if value="{{ isLost }}" hint-placeholder-val="{{ true }}">
+          <div style="position: absolute; top: 60px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #0B0B0B; border-radius: 999px; z-index: 20;">
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: #E0524A; animation: livepulse 1.1s ease-in-out infinite;"></div>
+            <span style="font: 500 11px 'JetBrains Mono', monospace; color: #fff;">Reconnecting…</span>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  _id = 1000;
+  state = {
+      vw: (typeof window !== 'undefined' && window.innerWidth ? window.innerWidth : 1200),
+      preview: 'desktop',
+      screen: 'setup',
+      role: 'host',
+      mode: 'batched',
+      timeoutSec: 30,
+      channel: 'Product AMA',
+      name: '',
+      email: '',
+      connection: 'idle',
+      messages: [
+        { id: 1, user: 'User 088', text: 'Hello!', self: false },
+        { id: 2, user: 'User 123', text: 'Tell us an interesting fact about this!', self: false },
+        { id: 3, user: 'User 41', text: "Where's it based?", self: false }
+      ],
+      queue: [
+        { id: 4, user: 'User 088', text: "What's the ETA on beta?", you: false },
+        { id: 5, user: 'You', text: 'How does pricing scale?', you: true },
+        { id: 6, user: 'User 12', text: 'Can it do video?', you: false }
+      ],
+      batchPhase: 'collecting',
+      batchRemaining: 30,
+      batchCount: 3,
+      answerRemaining: 2,
+      agentState: 'listening',
+      caption: '',
+      composer: '',
+      scriptOpen: false,
+      scriptText: '',
+      muted: false
+  };
+
+  componentDidMount() {
+    this._resize = () => this.setState({ vw: window.innerWidth || 1200 });
+    window.addEventListener('resize', this._resize);
+    this._resize();
+    this._timer = setInterval(() => this.tick(), 1000);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._resize);
+    clearInterval(this._timer);
+  }
+
+  tick() {
+    this.setState(prev => {
+      if (prev.screen !== 'stream' || prev.connection !== 'live') return null;
+      if (prev.mode === 'batched') {
+        if (prev.batchPhase === 'collecting') {
+          const r = prev.batchRemaining - 1;
+          if (r <= 0) return { batchPhase: 'answering', agentState: 'speaking', batchRemaining: 6, caption: 'Great questions — let me take these together. A few of you asked about the octopus…' };
+          return { batchRemaining: r, agentState: 'listening' };
+        }
+        const r = prev.batchRemaining - 1;
+        if (r <= 0) return { batchPhase: 'collecting', batchRemaining: prev.timeoutSec, batchCount: 0, agentState: 'listening', caption: '' };
+        return { batchRemaining: r };
+      }
+      // sequential
+      if (prev.agentState === 'thinking' || prev.agentState === 'speaking') {
+        const ar = prev.answerRemaining - 1;
+        if (ar <= 0) {
+          if (prev.agentState === 'thinking') {
+            const q = prev.queue[0];
+            return { agentState: 'speaking', answerRemaining: 4, caption: q ? ('Answering — ' + q.text) : '' };
+          }
+          const nq = prev.queue.slice(1);
+          return { queue: nq, caption: '', agentState: nq.length ? 'thinking' : 'idle', answerRemaining: nq.length ? 2 : 0 };
+        }
+        return { answerRemaining: ar };
+      }
+      if (prev.queue.length > 0) return { agentState: 'thinking', answerRemaining: 2 };
+      return prev.agentState === 'idle' ? null : { agentState: 'idle' };
+    });
+  }
+
+  goLive() { setTimeout(() => this.setState({ connection: 'live' }), 1500); }
+  emailValid(e) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); }
+
+  seg(active) {
+    return { padding: '6px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', font: "500 12px 'JetBrains Mono', monospace", letterSpacing: '0.02em', background: active ? '#0B0B0B' : 'transparent', color: active ? '#fff' : '#6B6B68' };
+  }
+  tile(active) {
+    return { flex: '1', minWidth: '220px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px', border: active ? '2px solid #0B0B0B' : '1px solid #E2E2DE', background: '#fff', borderRadius: '16px', padding: active ? '17px 19px' : '18px 20px', cursor: 'pointer', boxShadow: active ? '0 0 0 4px rgba(11,11,11,0.05)' : 'none' };
+  }
+  sel(active) {
+    return { display: 'inline-block', width: '18px', height: '18px', borderRadius: '50%', border: active ? '5px solid #0B0B0B' : '2px solid #D2D2CD', background: '#fff' };
+  }
+  tseg(active) {
+    return { flex: '1', height: '46px', borderRadius: '12px', cursor: 'pointer', font: "500 15px 'Space Grotesk', sans-serif", border: active ? '2px solid #0B0B0B' : '1px solid #E2E2DE', background: active ? '#0B0B0B' : '#fff', color: active ? '#fff' : '#0B0B0B' };
+  }
+  fmt(s) { const m = Math.floor(s / 60); const ss = s % 60; return m + ':' + String(Math.max(0, ss)).padStart(2, '0'); }
+
+  renderVals() {
+    const s = this.state;
+    const isMobile = s.preview === 'mobile' ? true : s.vw < 900;
+    const isHost = s.role === 'host';
+    const isBatched = s.mode === 'batched';
+    const isSequential = s.mode === 'sequential';
+
+    const statusMap = {
+      idle: { label: 'IDLE', color: '#9A9A96' },
+      listening: { label: 'LISTENING', color: '#2FA46B' },
+      thinking: { label: 'THINKING', color: '#3E6FE0' },
+      speaking: { label: 'SPEAKING', color: '#E0524A' }
+    };
+    const st = statusMap[s.agentState] || statusMap.idle;
+    const speaking = s.agentState === 'speaking';
+    const statusBg = speaking ? '#0B0B0B' : '#fff';
+    const statusText = speaking ? '#fff' : '#0B0B0B';
+    const statusBorder = speaking ? 'none' : '1px solid #E2E2DE';
+    const statusDot = { width: '7px', height: '7px', borderRadius: '50%', background: st.color, animation: (speaking || s.agentState === 'thinking') ? 'livepulse 1.4s ease-in-out infinite' : 'none' };
+
+    // HUD
+    let hudTop, hudSub, hudProgress;
+    if (isBatched) {
+      if (s.batchPhase === 'collecting') {
+        hudTop = 'BATCHED · COLLECTING';
+        hudSub = this.fmt(s.batchRemaining) + ' left · ' + s.batchCount + ' in batch';
+        hudProgress = Math.round((1 - s.batchRemaining / s.timeoutSec) * 100) + '%';
+      } else {
+        hudTop = 'BATCHED · ANSWERING ' + s.batchCount;
+        hudSub = 'responding to the room…';
+        hudProgress = '100%';
+      }
+    } else {
+      hudTop = 'SEQUENTIAL';
+      hudSub = s.queue.length + ' in queue';
+      hudProgress = s.queue.length ? '40%' : '0%';
+    }
+
+    const messageRows = s.messages.map(m => {
+      const self = !!m.self;
+      const agent = !!m.agent;
+      const dark = self || agent;
+      return {
+        id: m.id, user: agent ? 'AGENT · SCRIPTED' : m.user, text: m.text,
+        align: self ? 'flex-end' : 'flex-start',
+        bubbleStyle: {
+          background: dark ? '#0B0B0B' : '#F4F4F1',
+          color: dark ? '#fff' : '#0B0B0B',
+          borderRadius: self ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
+          padding: '10px 14px', maxWidth: '88%',
+          font: "400 14px/1.4 'Space Grotesk', sans-serif"
+        }
+      };
+    });
+
+    let yourPos = 0;
+    const queueRows = s.queue.map((q, i) => {
+      if (q.you) yourPos = i + 1;
+      const isNow = i === 0;
+      const isYou = !!q.you;
+      return {
+        id: q.id, isNow, isYou,
+        pos: isNow ? 'NOW' : String(i + 1).padStart(2, '0'),
+        label: q.user + ' — ' + q.text,
+        eta: i * 40,
+        rowStyle: { display: 'flex', alignItems: 'center', gap: '10px', padding: isYou ? '9px 11px' : '4px 2px', borderRadius: isYou ? '10px' : '0', background: isYou ? '#EEF2FD' : 'transparent', border: isYou ? '1px solid #DCE4FA' : 'none' },
+        posStyle: { font: "600 11px 'JetBrains Mono', monospace", width: '32px', flexShrink: '0', color: isNow ? '#2FA46B' : (isYou ? '#3E6FE0' : '#B0B0AB') },
+        textStyle: { flex: '1', font: isYou ? "500 13px 'Space Grotesk', sans-serif" : "400 13px 'Space Grotesk', sans-serif", color: isYou ? '#0B0B0B' : (isNow ? '#6B6B68' : '#A6A6A1'), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+      };
+    });
+
+    const joinOk = s.name.trim().length > 0 && this.emailValid(s.email);
+    const isEmpty = s.messages.length === 0;
+
+    return {
+      // flags / routing
+      isMobile, isHost, isBatched, isSequential,
+      showSetup: s.screen === 'setup',
+      showJoin: s.screen === 'join',
+      showConnecting: s.screen === 'stream' && s.connection === 'connecting',
+      showStreamD: s.screen === 'stream' && s.connection !== 'connecting' && !isMobile,
+      showStreamM: s.screen === 'stream' && s.connection !== 'connecting' && isMobile,
+      isLost: s.connection === 'lost',
+      isEmpty,
+      composerVisible: !s.scriptOpen,
+
+      // data
+      channel: s.channel, channelUpper: (s.channel || '').toUpperCase(),
+      name: s.name, email: s.email, composer: s.composer, scriptText: s.scriptText,
+      scriptOpen: s.scriptOpen, presence: 24,
+      messageRows, queueRows, queueCount: s.queue.length,
+      caption: s.caption, hasCaption: !!s.caption,
+      agentLabel: st.label, statusBg, statusText, statusBorder, statusDot,
+      hudTop, hudSub, hudProgress,
+      modeChip: isBatched ? ('BATCHED ' + s.timeoutSec + 's') : 'SEQUENTIAL',
+      muteLabel: s.muted ? 'Unmute agent' : 'Mute agent',
+      composerPlaceholder: isHost ? 'Message the room…' : 'Ask a question…',
+      posLabel: yourPos ? ("You're #" + yourPos) : 'Not in queue',
+      posPillStyle: { marginLeft: 'auto', padding: '4px 10px', borderRadius: '999px', background: yourPos ? '#EEF2FD' : '#F0F0EC', color: yourPos ? '#3E6FE0' : '#9A9A96', font: "500 11px 'JetBrains Mono', monospace" },
+
+      // toolbar segs
+      roleHostSeg: this.seg(isHost), roleGuestSeg: this.seg(!isHost),
+      modeBatchedSeg: this.seg(isBatched), modeSeqSeg: this.seg(isSequential),
+      viewDeskSeg: this.seg(s.preview === 'desktop'), viewMobSeg: this.seg(s.preview === 'mobile'),
+
+      // setup styling
+      tileBatched: this.tile(isBatched), tileSequential: this.tile(isSequential),
+      dotBatched: this.sel(isBatched), dotSequential: this.sel(isSequential),
+      t15: this.tseg(s.timeoutSec === 15), t30: this.tseg(s.timeoutSec === 30), t60: this.tseg(s.timeoutSec === 60),
+      joinBtnStyle: { height: '56px', border: 'none', borderRadius: '14px', cursor: joinOk ? 'pointer' : 'not-allowed', font: "600 16px 'Space Grotesk', sans-serif", background: joinOk ? '#0B0B0B' : '#D6D6D1', color: joinOk ? '#fff' : '#9A9A96' },
+      muteBtnStyle: { display: 'flex', alignItems: 'center', height: '44px', padding: '0 18px', borderRadius: '12px', border: '1px solid #DBDBD6', background: s.muted ? '#F4F4F1' : '#fff', color: '#0B0B0B', cursor: 'pointer', font: "500 14px 'Space Grotesk', sans-serif" },
+      muteBtnStyleM: { height: '42px', padding: '0 16px', borderRadius: '11px', border: '1px solid #DBDBD6', background: s.muted ? '#F4F4F1' : '#fff', color: '#0B0B0B', cursor: 'pointer', font: "500 13px 'Space Grotesk', sans-serif" },
+
+      // frame
+      frameStyle: (s.preview === 'mobile')
+        ? { width: '402px', height: '844px', maxHeight: 'calc(100vh - 112px)', margin: '92px auto 20px', alignSelf: 'center', borderRadius: '44px', border: '10px solid #0B0B0B', overflow: 'hidden', background: '#fff', boxShadow: '0 40px 90px -30px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }
+        : { width: '100%', minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', paddingTop: '76px' },
+
+      // handlers
+      onChannel: (e) => this.setState({ channel: e.target.value }),
+      onName: (e) => this.setState({ name: e.target.value }),
+      onEmail: (e) => this.setState({ email: e.target.value }),
+      onComposer: (e) => this.setState({ composer: e.target.value }),
+      onComposerKey: (e) => { if (e.key === 'Enter') this.sendMessage(); },
+      onScript: (e) => this.setState({ scriptText: e.target.value }),
+      setHost: () => this.setState({ role: 'host' }),
+      setGuest: () => this.setState({ role: 'participant' }),
+      pickBatched: () => this.setState({ mode: 'batched', batchPhase: 'collecting', batchRemaining: this.state.timeoutSec, batchCount: this.state.messages.length, agentState: 'listening', caption: '' }),
+      pickSequential: () => this.setState({ mode: 'sequential', agentState: 'listening', answerRemaining: 2, caption: '' }),
+      set15: () => this.setState({ timeoutSec: 15, batchRemaining: 15 }),
+      set30: () => this.setState({ timeoutSec: 30, batchRemaining: 30 }),
+      set60: () => this.setState({ timeoutSec: 60, batchRemaining: 60 }),
+      setDesktop: () => this.setState({ preview: 'desktop' }),
+      setMobile: () => this.setState({ preview: 'mobile' }),
+      startAsHost: () => { this.setState({ role: 'host', screen: 'stream', connection: 'connecting', batchRemaining: this.state.timeoutSec, batchPhase: 'collecting' }); this.goLive(); },
+      gotoJoin: () => this.setState({ screen: 'join' }),
+      backSetup: () => this.setState({ screen: 'setup' }),
+      joinChannel: () => { if (!joinOk) return; this.setState({ role: 'participant', screen: 'stream', connection: 'connecting' }); this.goLive(); },
+      toggleScript: () => this.setState(p => ({ scriptOpen: !p.scriptOpen })),
+      sendScript: () => { const t = this.state.scriptText.trim(); if (!t) return; this.setState(p => ({ agentState: 'speaking', caption: '“' + t + '”', scriptText: '', scriptOpen: false, messages: [...p.messages, { id: this._id++, user: 'agent', text: t, agent: true }] })); },
+      toggleMute: () => this.setState(p => ({ muted: !p.muted })),
+      sendMessage: () => {
+        const t = this.state.composer.trim(); if (!t) return;
+        const id = this._id++;
+        const uname = this.state.role === 'host' ? 'Host' : (this.state.name || 'You');
+        this.setState(prev => {
+          const messages = [...prev.messages, { id, user: uname, text: t, self: true }];
+          let queue = prev.queue; let batchCount = prev.batchCount;
+          if (prev.mode === 'sequential' && prev.role !== 'host') queue = [...prev.queue, { id, user: 'You', text: t, you: true }];
+          if (prev.mode === 'batched') batchCount = prev.batchCount + 1;
+          return { messages, queue, batchCount, composer: '' };
+        });
+      },
+      resetDemo: () => this.setState({ screen: 'setup', connection: 'idle', scriptOpen: false, caption: '', agentState: 'listening', name: '', email: '' })
+    };
+  }
+}
+</script>
+</body>
+</html>
