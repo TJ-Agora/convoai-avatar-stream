@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getChannel } from '../../../../../lib/channelManager.js';
+import { getChannel, tickChannel } from '../../../../../lib/channelManager.js';
 
 /**
  * Post a chat message into the shared room feed. Every message becomes a
@@ -11,7 +11,8 @@ import { getChannel } from '../../../../../lib/channelManager.js';
 export async function POST(request, { params }) {
   try {
     const { id } = params;
-    const channel = getChannel(id);
+    await tickChannel(id);
+    const channel = await getChannel(id);
     if (!channel) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const { uid, user, text } = await request.json();
@@ -19,7 +20,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Missing required field: text' }, { status: 400 });
     }
 
-    const result = channel.sendMessage({ uid, user, text: text.trim() });
+    const result = await channel.sendMessage({ uid, user, text: text.trim() });
     if (!result.accepted) {
       return NextResponse.json({ error: result.reason || 'Rejected' }, { status: 400 });
     }

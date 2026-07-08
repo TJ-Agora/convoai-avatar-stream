@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A 1-to-many live "avatar stream" built on Agora's Conversational AI Engine. A host creates a channel from the setup screen (`/`), gets two URLs (a shareable guest link and a private host link), and goes live with an AI avatar. Unlimited guests join the guest link, watch the avatar, and ask questions in a shared group chat. The avatar answers the room in one of two **response modes**. Multiple channels run concurrently and independently. State for each channel is held in an in-memory `Map` on the server; RTM broadcasts the state snapshot to every client, and RTC (mode=live, audience role) streams the avatar's audio/video.
+A 1-to-many live "avatar stream" built on Agora's Conversational AI Engine. A host creates a channel from the setup screen (`/`), gets two URLs (a shareable guest link and a private host link), and goes live with an AI avatar. Unlimited guests join the guest link, watch the avatar, and ask questions in a shared group chat. The avatar answers the room in one of two **response modes**. Multiple channels run concurrently and independently. State for each channel lives in **Upstash Redis** (`lib/channelStore.js`), so any serverless instance can serve any request (multi-stream safe on Vercel); RTM broadcasts the state snapshot to every client, and RTC (mode=live, audience role) streams the avatar's audio/video.
 
 This is a **demo project** forked from an earlier "AI Auctioneer" build — it reuses that project's Agora plumbing (RTC audience streaming, RTM state broadcast, the vendored Web toolkit for agent-state events, per-session token minting, avatar integration, and the server-side speech lock) but replaces the auction domain (bids, lots, going-once/twice/sold, balances) with a simple group-chat-with-an-avatar experience. The UI matches the design in `claude_design/project/AI Avatar App.dc.html`.
 
@@ -10,7 +10,7 @@ This is a **demo project** forked from an earlier "AI Auctioneer" build — it r
 
 ## Architecture
 
-Next.js 14 (App Router) with API routes for server logic and React client pages for the UI. Per-channel state lives in an in-memory `Map` on the server. RTM carries both Conversational-AI events (toolkit-mediated) and server→client state broadcasts — no separate WebSocket server.
+Next.js 14 (App Router) with API routes for server logic and React client pages for the UI. Per-channel state lives in Upstash Redis (atomic native structures; short NX locks serialize cross-instance dispatch). There are NO in-process timers: batch/welcome windows are deadline fields in Redis, driven by `tickChannel()` on hot routes plus a client poke when the HUD countdown hits zero. RTM carries both Conversational-AI events (toolkit-mediated) and server→client state broadcasts — snapshots carry a monotonic `rev` so clients drop out-of-order broadcasts.
 
 ```
 ┌──────────────────────────┐        ┌─────────────────────┐
@@ -49,7 +49,7 @@ The agent join request must enable `advanced_features.enable_rtm: true`, `parame
 Chosen by the host at setup, stored on the channel instance:
 
 - **Sequential** — each guest question is pushed to `questionQueue`. `drainQueue()` answers one at a time via `/think`; the next is dispatched only when the previous answer's speech releases the lock.
-- **Batched** — guest questions collect in `batchQuestions` during a fixed window (`collectionWindowMs`, 10/20/30s). When the `batchTimer` fires, `closeBatchWindow()` sends one combined `/think` prompt for the whole batch; after the answer, `markSpeechDone()` calls `openBatchWindow()` to start the next window.
+- **Batched** — guest questions collect in the `batch` LIST during a fixed window (`collectionWindowMs`, 10/20/30s). When the stored `batchDeadline` passes (detected by `tickChannel()` on any hot request, or the HUD's zero-cross poke), `closeBatchWindow()` sends one combined `/think` prompt for the whole batch; after the answer, `markSpeechDone()` calls `openBatchWindow()` to start the next window.
 
 Both modes are serialized by the **speech lock** — the avatar answers exactly one thing at a time.
 
@@ -64,7 +64,8 @@ convoai_stream/
 ├── claude_design/                      ← Static UI prototype (design source of truth)
 ├── lib/                                ← Server-side modules (Node, ESM .js)
 │   ├── agoraService.js                 ← Agora REST wrapper: joinAgent, speak, think, leaveAgent, listAgents, publishChannelMessage
-│   ├── channelManager.js               ← Per-channel orchestrator (Map<id, instance>) — modes, messages, queue, batch, speech lock
+│   ├── channelManager.js               ← Per-channel orchestrator on Redis — modes, messages, queue, batch, speech lock, tickChannel
+│   ├── channelStore.js                 ← Redis layer (Upstash): key layout, TTLs, NX locks
 │   └── tokenService.js                 ← RTC + RTM token generation; generateClientCredentials for per-guest minting
 ├── app/
 │   ├── layout.js                       ← Loads Instrument Serif, Space Grotesk, JetBrains Mono
@@ -108,21 +109,19 @@ convoai_stream/
 
 ### 1. Channel Manager (`lib/channelManager.js`) — Per-Channel Instances
 
-State for all channels lives in `globalThis.__channels: Map<id, ChannelInstance>`, plus a reverse index `globalThis.__channelHostTokens: Map<hostToken, id>`. Lifecycle status is a plain string: `IDLE` → `LIVE` → `CLOSED`.
+State for all channels lives in **Redis** (see `lib/channelStore.js` for the key layout): scalars in `ch:{id}:meta` (HASH), the feed in `ch:{id}:messages` (ZSET — fractional scores let answers insert at their anchor), queues/buffers as LISTs, dedupe sets as SETs, plus `token:{hostToken}` → id and a `channels:index` SET. Lifecycle status is a plain string in meta: `IDLE` → `LIVE` → `CLOSED`.
 
-Each instance holds: `mode`, `collectionWindowMs`, `channelTitle`, `topic`, `messages[]` ({id,uid,user,text,kind:'chat'|'agent'}), `questionQueue[]` (sequential), `batchQuestions[]`/`batchPhase`/`batchDeadline`/`batchTimer`/`batchPendingAnswer` (batched), the speech-lock fields (`isSpeaking`, `agentState`, `onSpeechDoneCallback`, `lastStateNotificationAt`, `lastSpokenText`, `caption`), and `participants: Map<uid,{name,lastSeen}>` for presence.
+Public exports (ALL async): `createChannel(opts)`, `getChannel(id)` → `{notifyAgentState, start, stop, sendMessage, speakScript, addAgentTranscript, heartbeat, getState, tick}`, `getChannelByHostToken(token)`, `deleteChannel(id)`, `listChannels()`, `tickChannel(id)`.
 
-Public exports: `createChannel(opts)`, `getChannel(id)` → `{notifyAgentState, start, stop, sendMessage, speakScript, heartbeat, getState}`, `getChannelByHostToken(token)`, `deleteChannel(id)`, `listChannels()`.
+**Cross-instance serialization** uses short Redis NX locks (`lock:dispatch` for anything taking the speech lock; `lock:release` for speech-done dedupe; `lock:histsync`). Hot-path mutations use atomic native ops (ZADD/RPUSH/SADD/HSET) — never read-modify-write.
 
-**All per-channel helpers (`broadcastState`, `markSpeechDone`, `speakNow`, `drainQueue`, `openBatchWindow`, `closeBatchWindow`, `getState`, …) are defined INSIDE `getChannel` so they close over the instance `a`.** This is non-negotiable — those helpers schedule timers and one-shot callbacks; re-binding them to another instance would leak two concurrent channels into each other.
-
-Cleanup: a global sweep (guarded by `globalThis.__channelSweepStarted`) evicts `IDLE` channels after 2h and `CLOSED` after 30m. Orphan reconciliation on process start leaves any Agora agent named `host-*` we don't know about.
+Cleanup: rolling TTLs (3h active, 30m after CLOSED) replace the old sweep; `listChannels` prunes expired ids from the index lazily. There is no orphan-agent startup sweep anymore — agents self-terminate via `idle_timeout: 600`, and `/api/agents/stop|stop-all` is the manual kill switch.
 
 ### 2. The Speech Lock (drives both modes)
 
 `speakNow()`/`/think` set `isSpeaking = true` optimistically. When the agent stops, Agora emits `state.speaking = false` over RTM; `useChannel`'s message handler POSTs `/agent-state {state:'idle'}` → `notifyAgentState` → `markSpeechDone()`. `markSpeechDone` releases the lock and then, **by mode**: sequential → `drainQueue()` (answer the next queued question); batched → `openBatchWindow()` if we just finished answering, or `closeBatchWindow()` if a window closed while the agent was mid-script (`batchPendingAnswer`).
 
-`speaking` and `thinking` states are ignored (mid-cycle). Multiple clients post the same transition; the server dedupes within 300ms via `lastStateNotificationAt`. Do **not** dedupe on `turnID` — with the `/speak`+`/think` flow it stays at 1 forever. **No fallback timer** — the RTM event is authoritative; if RTM dies the channel stalls (acceptable for a demo).
+`speaking` and `thinking` states are ignored (mid-cycle). Multiple clients post the same transition; the server dedupes with a 300ms Redis NX lock (`lock:release`). Do **not** dedupe on `turnID` — with the `/speak`+`/think` flow it stays at 1 forever. **No fallback timer** — the RTM event is authoritative; if RTM dies the channel stalls (acceptable for a demo).
 
 ### 3. Two URLs / Host Auth
 
@@ -177,13 +176,13 @@ Runs on **port 4000** (`next dev -p 4000`). See `.env.example` for the full list
 
 7. **Batch timer surviving the lock is intentional** — no timer runs during the "answering" phase; the next window is armed in `markSpeechDone → openBatchWindow`. Questions arriving during answering accumulate for the next window.
 
-8. **All per-channel helpers must stay inside `getChannel(id)`'s closure** — they schedule timers that capture the specific `a`. Hoisting any to module scope makes two concurrent channels fire each other's timers.
+8. **No in-process timers, ever.** Server timers don't survive serverless. Time-based behavior = deadline fields in Redis (`batchDeadline`, `welcomeDeadline`) + `tickChannel()` on hot routes + the HUD's zero-cross poke. If you add a new timed behavior, add a deadline field and extend `tick()` — do NOT reach for `setTimeout`. (The old "helpers must close over the instance" invariant died with the in-memory Map.)
 
 9. **Next 14 params** — `params` in pages and route handlers is a plain object; destructure directly (`const { id } = params`). The Next 15 `await params` pattern would throw.
 
 10. **Don't log tokens.** `joinAgent` logs only `[Agora] JOIN <channelName> (tts=…, avatar=…)`.
 
-11. **In-memory state is lost on restart.** Channels live in `globalThis.__channels` and don't survive HMR of `channelManager.js` or a process restart. For production, swap the Map for a persistence layer. **On Vercel (serverless)** this also means split-brain across instances: requests landing on a different instance 404 (demo-grade trade-off, accepted). Related: the startup orphan-agent sweep is SKIPPED when `process.env.VERCEL` is set — with concurrent instances each holding an empty Map, a cold start would reap other instances' live agents; the agents' `idle_timeout: 600` bounds orphan cost instead.
+11. **State is in Upstash Redis — safe across instances/redeploys, bounded by TTL.** Channels expire after 3h of inactivity (30m once CLOSED); every mutating route refreshes the TTL. Snapshots carry a monotonic `rev` (HINCRBY on broadcast) and `useChannel` drops out-of-order snapshots — keep that when adding broadcast paths. Requires `KV_REST_API_URL`/`KV_REST_API_TOKEN` (Vercel Marketplace Upstash integration; same DB for local dev via `.env.local`).
 
 12. **The native `greeting_message` only fires for users the agent can SEE join.** The agent tracks exactly the UIDs in `remote_rtc_uids` (immutable after join — `/update` can't change it), and only *visible* (broadcaster-role) joins count; audience joins are invisible in live mode. That's why the host tab joins RTC as `host` role with a PUBLISHER token and its real UID is passed through `start({hostUid})` into `remote_rtc_uids`. The wildcard `'*'` is rejected when an avatar is enabled.
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getChannel } from '../../../../../lib/channelManager.js';
+import { getChannel, tickChannel } from '../../../../../lib/channelManager.js';
 
 /**
  * Clients notify the server when the agent stops speaking (via the RTM
@@ -9,13 +9,14 @@ import { getChannel } from '../../../../../lib/channelManager.js';
 export async function POST(request, { params }) {
   try {
     const { id } = params;
-    const channel = getChannel(id);
+    await tickChannel(id);
+    const channel = await getChannel(id);
     if (!channel) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const { state, turnID } = await request.json();
     if (!state) return NextResponse.json({ error: 'Missing state' }, { status: 400 });
 
-    channel.notifyAgentState(state, turnID);
+    await channel.notifyAgentState(state, turnID);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in agent-state:', error);

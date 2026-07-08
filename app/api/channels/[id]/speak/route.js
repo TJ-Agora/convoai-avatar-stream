@@ -11,7 +11,7 @@ export async function POST(request, { params }) {
   try {
     const { id } = params;
     const hostToken = request.headers.get('x-channel-host-token');
-    const hostChannel = getChannelByHostToken(hostToken);
+    const hostChannel = await getChannelByHostToken(hostToken);
     if (!hostChannel || hostChannel.id !== id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

@@ -7,7 +7,7 @@ import { getChannelByHostToken } from '../../../../../lib/channelManager.js';
  */
 export async function GET(_request, { params }) {
   const { hostToken } = params;
-  const channel = getChannelByHostToken(hostToken);
+  const channel = await getChannelByHostToken(hostToken);
   if (!channel) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json({ id: channel.id, state: channel.getState() });
+  return NextResponse.json({ id: channel.id, state: await channel.getState() });
 }

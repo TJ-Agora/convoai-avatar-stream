@@ -18,12 +18,12 @@ export async function GET(request, { params }) {
 
     if (role === 'host') {
       const hostToken = request.headers.get('x-channel-host-token');
-      const hostChannel = getChannelByHostToken(hostToken);
+      const hostChannel = await getChannelByHostToken(hostToken);
       if (!hostChannel || hostChannel.id !== id) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     } else {
-      const channel = getChannel(id);
+      const channel = await getChannel(id);
       if (!channel) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 

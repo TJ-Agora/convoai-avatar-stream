@@ -11,12 +11,24 @@ function fmt(s) {
 }
 
 /** Top HUD: mode + progress bar + timer. Runs a local 1s ticker for batched. */
-function HUD({ mode, batchPhase, batchCount, batchDeadline, collectionWindowMs, queueLength, compact }) {
+function HUD({ mode, batchPhase, batchCount, batchDeadline, collectionWindowMs, queueLength, compact, channelName }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Server timers are deadline-driven (no in-process setTimeout on serverless):
+  // when our local countdown crosses the deadline, poke /state once — the
+  // server's tick closes the batch window within ~1s instead of waiting for
+  // the next 10s poll.
+  const firedForRef = useRef(0);
+  useEffect(() => {
+    if (mode !== 'batched' || !batchDeadline || !channelName) return;
+    if (now < batchDeadline || firedForRef.current === batchDeadline) return;
+    firedForRef.current = batchDeadline;
+    fetch(`/api/channels/${channelName}/state`, { cache: 'no-store' }).catch(() => {});
+  }, [now, mode, batchDeadline, channelName]);
 
   let top, sub, progress;
   if (mode === 'batched') {
@@ -128,6 +140,7 @@ export default function StreamStage({
           collectionWindowMs={channel.collectionWindowMs}
           queueLength={channel.queue?.length || 0}
           compact={mobile}
+          channelName={channel.channelName}
         />
       </div>
 

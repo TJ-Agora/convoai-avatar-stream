@@ -68,6 +68,7 @@ Required:
 | `AGORA_PASSWORD` | Agora REST API customer secret |
 | `AGORA_APP_CERTIFICATE` | App certificate (needed for token generation; enable token auth in the Agora Console) |
 | `ANAM_API_KEY`, `ANAM_AVATAR_ID` | Anam avatar credentials (the avatar is on by default) |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (channel state) — auto-provisioned by the Vercel Marketplace integration |
 
 Optional (defaults shown):
 
@@ -86,7 +87,7 @@ Optional (defaults shown):
 
 ## How the demo works (in 60 seconds)
 
-- Each channel is identified by an 8-character `id`. The id doubles as the Agora RTC + RTM channel name, so there's no database — channel state lives in an in-memory `Map` on the server.
+- Each channel is identified by an 8-character `id`. The id doubles as the Agora RTC + RTM channel name. Channel state (chat feed, queues, speech lock, deadlines) lives in **Upstash Redis**, so any server instance can serve any request — multiple concurrent streams work, and sessions survive instance recycling and redeploys. Channels auto-expire (3h inactive / 30m after ending).
 - The host has a separate, unguessable 32-character `hostToken` that authorizes the **Start / Stop / Speak** REST calls. Guests can't derive the host URL from the guest URL.
 - The browser joins an Agora **RTC** channel (in `mode: 'live'`) to hear the avatar's voice and see its video. Guests are invisible `audience`; the host joins as a broadcaster (publishing nothing) so the agent detects its arrival and speaks the native `greeting_message`. Only the agent publishes media — Agora supports many subscribers per channel cheaply.
 - The browser also joins an Agora **RTM** channel for two things: receiving live channel-state broadcasts from the server (chat feed, queue, presence, agent state), and — via the vendored **Conversational AI toolkit** — receiving agent-state events that drive the speech handoff plus live transcripts that drive the word-by-word caption.
@@ -117,21 +118,22 @@ lib/                                  # Server-side modules (Node)
 
 ---
 
-## Deploying (Vercel — demo-grade)
+## Deploying (Vercel)
 
-The app runs on Vercel with zero config, with one architectural caveat to understand: **live-channel state is held in server memory** (see "How the demo works"), which serverless doesn't guarantee across instances. In practice a demo session runs fine on a single warm instance, but a live session can end early if Vercel scales out, recycles the instance, or you redeploy mid-stream. Nothing durable is lost (channels are ephemeral by design), and abandoned agents self-terminate within 10 minutes (`idle_timeout`). For production robustness, move channel state to Redis first.
+Channel state lives in Upstash Redis (Vercel Marketplace), so the app is fully serverless-safe: multiple concurrent streams, instance scale-out, and redeploys mid-session all work. Time-based behavior (batch windows, welcome batching) is deadline-driven — no server timers.
 
 ```bash
-vercel link                                 # link the repo to a Vercel project
+vercel link                                  # link the repo to a Vercel project
+vercel integration add upstash/upstash-kv    # provisions Redis + KV_* env vars
 # add every required var from .env.example (production scope):
-vercel env add AGORA_APP_ID production      # …repeat for the rest
+vercel env add AGORA_APP_ID production       # …repeat for the rest
 vercel deploy --prod
 ```
 
 Notes:
 - `NEXT_PUBLIC_AGORA_APP_ID` must be set **before** the first build (it's baked into the client bundle).
-- The startup orphan-agent sweep is automatically disabled on Vercel (`process.env.VERCEL`) — on serverless it would reap live agents belonging to other instances. Stray agents are bounded by their 10-minute idle timeout instead.
-- Deploy deliberately: a production redeploy ends any in-flight live sessions.
+- For local dev against the same Redis: `vercel env pull` (or copy the `KV_*` values into `.env.local`).
+- Stray agents (e.g. a host tab that vanished) self-terminate within 10 minutes via `idle_timeout`; `POST /api/agents/stop-all` is the manual kill switch.
 
 ## Troubleshooting
 

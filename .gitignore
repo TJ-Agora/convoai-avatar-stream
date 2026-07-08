@@ -25,6 +25,11 @@ yarn-error.log*
 # dev scratch
 screenshots/
 agora_docs/
+example_project/
 
 # deployment
 .vercel/
+.env*.local
+
+# local experiments
+example_project/

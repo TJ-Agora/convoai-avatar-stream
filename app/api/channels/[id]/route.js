@@ -11,10 +11,10 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = params;
     const hostToken = request.headers.get('x-channel-host-token');
-    const hostChannel = getChannelByHostToken(hostToken);
+    const hostChannel = await getChannelByHostToken(hostToken);
 
     if (!hostChannel || hostChannel.id !== id) {
-      const stillExists = !!getChannel(id);
+      const stillExists = !!(await getChannel(id));
       if (stillExists) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }

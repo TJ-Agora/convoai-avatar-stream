@@ -38,6 +38,18 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
   const [error, setError] = useState(null);
   const rtmClientRef = useRef(null);
   const agoraRTMRef = useRef(null);
+  const lastRevRef = useRef(-1);
+
+  // Snapshots now carry a monotonically increasing `rev`. With multiple server
+  // instances broadcasting, snapshots can arrive out of order — never apply
+  // one older than what we've already rendered.
+  const applySnapshot = useCallback((data) => {
+    if (typeof data.rev === 'number') {
+      if (data.rev < lastRevRef.current) return;
+      lastRevRef.current = data.rev;
+    }
+    setChannelState(data);
+  }, []);
 
   // Initial state fetch + periodic poll. RTM broadcasts cover state changes
   // when the server is healthy, but if the channel is force-deleted or the
@@ -58,7 +70,7 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
         }
         if (res.ok) {
           const data = await res.json();
-          if (data && data.type === 'state') setChannelState(data);
+          if (data && data.type === 'state') applySnapshot(data);
         }
       } catch (err) {
         // Network error — leave state as-is and try again on the next tick.
@@ -113,7 +125,7 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
         try {
           const freshRes = await fetch(`/api/channels/${channelId}/state`, { cache: 'no-store' });
           const freshData = await freshRes.json();
-          if (mounted && freshData && freshData.type === 'state') setChannelState(freshData);
+          if (mounted && freshData && freshData.type === 'state') applySnapshot(freshData);
         } catch (err) {
           console.error('[useChannel] Post-RTM state fetch error:', err);
         }
@@ -125,7 +137,7 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
 
             // Case 1: server state broadcasts (full channel snapshot).
             if (data && data.type === 'state') {
-              setChannelState(data);
+              applySnapshot(data);
               setError(null);
               return;
             }

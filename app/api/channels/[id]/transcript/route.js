@@ -13,11 +13,11 @@ import { getChannel } from '../../../../../lib/channelManager.js';
 export async function POST(request, { params }) {
   try {
     const { id } = params;
-    const channel = getChannel(id);
+    const channel = await getChannel(id);
     if (!channel) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const { turnId, text, interrupted } = await request.json();
-    const result = channel.addAgentTranscript({ turnId, text, interrupted: !!interrupted });
+    const result = await channel.addAgentTranscript({ turnId, text, interrupted: !!interrupted });
     if (!result.accepted) {
       return NextResponse.json({ error: result.reason || 'Rejected' }, { status: 400 });
     }

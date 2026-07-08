@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getChannel, getChannelByHostToken } from '../../../../../lib/channelManager.js';
+import { getChannel, getChannelByHostToken, tickChannel } from '../../../../../lib/channelManager.js';
 
 /**
  * Presence heartbeat. The stream page POSTs this on mount and every ~15s.
@@ -14,14 +14,15 @@ import { getChannel, getChannelByHostToken } from '../../../../../lib/channelMan
 export async function POST(request, { params }) {
   try {
     const { id } = params;
-    const channel = getChannel(id);
+    await tickChannel(id);
+    const channel = await getChannel(id);
     if (!channel) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const { uid, name } = await request.json();
     const hostToken = request.headers.get('x-channel-host-token');
-    const isHost = hostToken ? getChannelByHostToken(hostToken)?.id === id : false;
+    const isHost = hostToken ? (await getChannelByHostToken(hostToken))?.id === id : false;
 
-    channel.heartbeat(uid, name, isHost);
+    await channel.heartbeat(uid, name, isHost);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in presence:', error);
