@@ -56,6 +56,8 @@ The app is available at **http://localhost:4000**.
 
 ## Environment variables
 
+The app ships with **Minimax TTS + Anam avatar** (set at channel creation in `app/page.jsx`). These are what it actually reads:
+
 Required:
 
 | Var | What it is |
@@ -65,26 +67,20 @@ Required:
 | `AGORA_USERNAME` | Agora REST API customer key |
 | `AGORA_PASSWORD` | Agora REST API customer secret |
 | `AGORA_APP_CERTIFICATE` | App certificate (needed for token generation; enable token auth in the Agora Console) |
-| `AGORA_PRESET` | Comma-separated ASR + LLM + TTS preset (default: `deepgram_nova_3,openai_gpt_4o_mini,minimax_speech_2_6_turbo`) |
+| `ANAM_API_KEY`, `ANAM_AVATAR_ID` | Anam avatar credentials (the avatar is on by default) |
 
-Optional (avatar):
+Optional (defaults shown):
 
-| Var | What it is |
-|---|---|
-| `AVATAR_AGORA_UID` | RTC UID the avatar's video track publishes on (default `102`) |
-| `ANAM_API_KEY`, `ANAM_AVATAR_ID` | If using Anam as the avatar provider |
-| `HEYGEN_API_KEY`, `HEYGEN_AVATAR_ID` | If using HeyGen instead |
-
-Optional (custom TTS vendor — overrides the TTS portion of `AGORA_PRESET`):
-
-| Var | What it is |
-|---|---|
-| `AGORA_PRESET_ASR_LLM` | When using a custom TTS, keep ASR + LLM here (e.g. `deepgram_nova_3,openai_gpt_4o_mini`) |
-| `TTS_KEY`, `TTS_REGION`, `TTS_VOICE_NAME` | Microsoft Azure Speech |
-| `MINIMAX_VOICE_ID` | Voice ID when using the Minimax preset (default `English_captivating_female1`) |
-| `TTS_SPEED` | TTS playback speed multiplier (default `1.0`) |
+| Var | Default | What it is |
+|---|---|---|
+| `AGORA_PRESET_ASR_LLM` | `deepgram_nova_3,openai_gpt_4o_mini` | ASR + LLM portion of the agent preset (Minimax TTS is appended automatically) |
+| `MINIMAX_VOICE_ID` | `English_captivating_female1` | Minimax TTS voice |
+| `TTS_SPEED` | `1.0` | TTS playback speed multiplier |
+| `AVATAR_AGORA_UID` | `102` | RTC UID the avatar's video track publishes on |
 
 `.env.example` has the same list with inline comments — use it as the source of truth when filling in `.env.local`.
+
+> `lib/agoraService.js` also contains config branches for **Microsoft Azure TTS** (`TTS_KEY`, `TTS_REGION`, `TTS_VOICE_NAME`), the **OpenAI TTS preset** (`AGORA_PRESET`), and **HeyGen avatars** (`HEYGEN_API_KEY`, `HEYGEN_AVATAR_ID`, `HEYGEN_QUALITY`). The setup screen doesn't currently expose vendor selection, so those env vars only matter if you wire `ttsVendor` / `avatarVendor` through channel creation yourself.
 
 ---
 
