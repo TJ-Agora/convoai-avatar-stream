@@ -183,7 +183,7 @@ Runs on **port 4000** (`next dev -p 4000`). See `.env.example` for the full list
 
 10. **Don't log tokens.** `joinAgent` logs only `[Agora] JOIN <channelName> (tts=…, avatar=…)`.
 
-11. **In-memory state is lost on restart.** Channels live in `globalThis.__channels` and don't survive HMR of `channelManager.js` or a process restart. For production, swap the Map for a persistence layer.
+11. **In-memory state is lost on restart.** Channels live in `globalThis.__channels` and don't survive HMR of `channelManager.js` or a process restart. For production, swap the Map for a persistence layer. **On Vercel (serverless)** this also means split-brain across instances: requests landing on a different instance 404 (demo-grade trade-off, accepted). Related: the startup orphan-agent sweep is SKIPPED when `process.env.VERCEL` is set — with concurrent instances each holding an empty Map, a cold start would reap other instances' live agents; the agents' `idle_timeout: 600` bounds orphan cost instead.
 
 12. **The native `greeting_message` only fires for users the agent can SEE join.** The agent tracks exactly the UIDs in `remote_rtc_uids` (immutable after join — `/update` can't change it), and only *visible* (broadcaster-role) joins count; audience joins are invisible in live mode. That's why the host tab joins RTC as `host` role with a PUBLISHER token and its real UID is passed through `start({hostUid})` into `remote_rtc_uids`. The wildcard `'*'` is rejected when an avatar is enabled.
 

@@ -117,6 +117,22 @@ lib/                                  # Server-side modules (Node)
 
 ---
 
+## Deploying (Vercel — demo-grade)
+
+The app runs on Vercel with zero config, with one architectural caveat to understand: **live-channel state is held in server memory** (see "How the demo works"), which serverless doesn't guarantee across instances. In practice a demo session runs fine on a single warm instance, but a live session can end early if Vercel scales out, recycles the instance, or you redeploy mid-stream. Nothing durable is lost (channels are ephemeral by design), and abandoned agents self-terminate within 10 minutes (`idle_timeout`). For production robustness, move channel state to Redis first.
+
+```bash
+vercel link                                 # link the repo to a Vercel project
+# add every required var from .env.example (production scope):
+vercel env add AGORA_APP_ID production      # …repeat for the rest
+vercel deploy --prod
+```
+
+Notes:
+- `NEXT_PUBLIC_AGORA_APP_ID` must be set **before** the first build (it's baked into the client bundle).
+- The startup orphan-agent sweep is automatically disabled on Vercel (`process.env.VERCEL`) — on serverless it would reap live agents belonging to other instances. Stray agents are bounded by their 10-minute idle timeout instead.
+- Deploy deliberately: a production redeploy ends any in-flight live sessions.
+
 ## Troubleshooting
 
 **The avatar joins but never answers questions.**
