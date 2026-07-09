@@ -8,6 +8,7 @@ import StreamScreen from '../../components/stream/StreamScreen';
 import { Spinner } from '../../components/stream/StreamParts';
 import { useAgoraAuth } from '../../../hooks/useAgoraAuth';
 import SignInCard from '../../components/SignInCard';
+import ErrorScreen from '../../components/ErrorScreen';
 
 export default function ManagePage({ params }) {
   const { hostToken } = params;
@@ -113,7 +114,15 @@ export default function ManagePage({ params }) {
     );
   }
   if (resolveError) {
-    return <Centered><span style={{ color: 'var(--red)', fontSize: 14 }}>{resolveError}</span></Centered>;
+    return (
+      <ErrorScreen
+        eyebrow="INVALID HOST LINK"
+        title="This host link isn't active"
+        body="Host links stop working when a stream ends or expires (streams clean up about 30 minutes after ending). If you copied the link, double-check it — otherwise create a new stream."
+        ctaHref="/"
+        ctaLabel="Go to setup"
+      />
+    );
   }
   if (!channelId || !creds) {
     return <Centered><Spinner /><span className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'var(--muted)' }}>PREPARING HOST CONSOLE</span></Centered>;

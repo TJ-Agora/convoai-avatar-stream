@@ -70,7 +70,7 @@ function HUD({ mode, batchPhase, batchCount, batchDeadline, collectionWindowMs, 
 }
 
 /** Host controls under the stage: Add Script → Speak, Mute, join-QR (desktop). */
-function HostControls({ isMuted, onToggleMute, onSpeakScript, qr }) {
+function HostControls({ isMuted, onToggleMute, onSpeakScript, qr, mobile }) {
   const [scriptOpen, setScriptOpen] = useState(false);
   const [scriptText, setScriptText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -94,7 +94,8 @@ function HostControls({ isMuted, onToggleMute, onSpeakScript, qr }) {
             onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
             placeholder="Type what the avatar should say…"
             autoFocus
-            style={{ flex: 1, height: 44, padding: '0 16px', border: '1px solid #DBDBD6', borderRadius: 12, fontSize: 14, background: 'var(--panel)' }}
+            // 16px on mobile: prevents iOS Safari's focus auto-zoom.
+            style={{ flex: 1, height: 44, padding: '0 16px', border: '1px solid #DBDBD6', borderRadius: 12, fontSize: mobile ? 16 : 14, background: 'var(--panel)' }}
           />
           <button onClick={send} disabled={busy || !scriptText.trim()} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Speak</button>
         </div>
@@ -157,6 +158,7 @@ export default function StreamStage({
           onToggleMute={onToggleMute}
           onSpeakScript={onSpeakScript}
           qr={!mobile ? <JoinQr channelId={channel.channelName} /> : null}
+          mobile={mobile}
         />
       )}
 
