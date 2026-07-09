@@ -6,7 +6,10 @@
     "dev": "next dev -p 4000 -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy": "vitest run && vercel deploy --prod"
   },
   "dependencies": {
     "@agora-js/report": "^4.24.3",
@@ -17,7 +20,8 @@
     "agora-token": "^2.0.5",
     "next": "^14.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-qr-code": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.41",
@@ -25,6 +29,7 @@
     "@types/react-dom": "^18.3.7",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   }
 }
