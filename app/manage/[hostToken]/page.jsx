@@ -9,6 +9,7 @@ import { Spinner } from '../../components/stream/StreamParts';
 import { useAgoraAuth } from '../../../hooks/useAgoraAuth';
 import SignInCard from '../../components/SignInCard';
 import ErrorScreen from '../../components/ErrorScreen';
+import ConfirmModal from '../../components/ConfirmModal';
 
 export default function ManagePage({ params }) {
   const { hostToken } = params;
@@ -21,6 +22,8 @@ export default function ManagePage({ params }) {
   const [rtmCreds, setRtmCreds] = useState(null); // useChannel — guest role, UID_B
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  const [ending, setEnding] = useState(false);
   const startedRef = useRef(false);
 
   // Resolve host token → channel id. Gated on auth so an unauthenticated
@@ -140,12 +143,16 @@ export default function ManagePage({ params }) {
   };
 
   const handleStop = async () => {
-    if (!confirm('End this stream? Everyone will be disconnected.')) return;
+    setEnding(true);
     try {
       await channel.stop();
       await fetch(`/api/channels/${channelId}`, { method: 'DELETE', headers: { 'X-Channel-Host-Token': hostToken } });
       router.push('/');
-    } catch (e) { setError(e.message); }
+    } catch (e) {
+      setError(e.message);
+      setEnding(false);
+      setConfirmEnd(false);
+    }
   };
 
   const onSend = (text) => channel.sendMessage(text, { uid: rtmCreds?.uid, user: channel.hostName || 'Host' });
@@ -160,7 +167,7 @@ export default function ManagePage({ params }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap' }}>
           <span className="mono" style={{ fontSize: 11, color: 'var(--muted)', maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestUrl}</span>
           <button onClick={copyGuest} style={toolbarBtn}>{copied ? 'Copied!' : 'Copy guest link'}</button>
-          <button onClick={handleStop} disabled={!isLive && !isOver} style={{ ...toolbarBtn, borderColor: 'color-mix(in oklab, var(--red) 40%, var(--line-3))', color: 'var(--red)' }}>{isOver ? 'Delete' : 'End stream'}</button>
+          <button onClick={() => setConfirmEnd(true)} disabled={!isLive && !isOver} style={{ ...toolbarBtn, borderColor: 'color-mix(in oklab, var(--red) 40%, var(--line-3))', color: 'var(--red)' }}>{isOver ? 'Delete' : 'End stream'}</button>
         </div>
       </div>
 
@@ -185,6 +192,20 @@ export default function ManagePage({ params }) {
           onSpeakScript={channel.speakScript}
         />
       )}
+
+      <ConfirmModal
+        open={confirmEnd}
+        eyebrow="END STREAM"
+        title={isOver ? 'Delete this stream?' : 'End this stream?'}
+        body={isOver
+          ? 'This removes the stream immediately. Anyone still on the guest link will see it as ended.'
+          : 'Everyone will be disconnected and the avatar will leave. This can\u2019t be undone.'}
+        confirmLabel={isOver ? 'Delete' : 'End stream'}
+        danger
+        busy={ending}
+        onConfirm={handleStop}
+        onCancel={() => setConfirmEnd(false)}
+      />
     </div>
   );
 }
