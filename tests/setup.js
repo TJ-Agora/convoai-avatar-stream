@@ -6,8 +6,13 @@ import { readFileSync } from 'fs';
 try {
   for (const line of readFileSync('.env.local', 'utf8').split('\n')) {
     const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
-    // Strip inline comments (" # …") the same way dotenv does.
-    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].split(/\s+#/)[0].trim();
+    if (!m || process.env[m[1]] !== undefined) continue;
+    // dotenv semantics: quoted values are taken verbatim (quotes stripped,
+    // inline # kept); unquoted values have trailing " # …" comments removed.
+    // Quoting matters because `vercel env pull` writes KEY="value".
+    const raw = m[2].trim();
+    const quoted = raw.match(/^"([^"]*)"|^'([^']*)'/);
+    process.env[m[1]] = quoted ? (quoted[1] ?? quoted[2]) : raw.split(/\s+#/)[0].trim();
   }
 } catch { /* no .env.local — rely on real env */ }
 
