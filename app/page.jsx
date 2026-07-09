@@ -16,6 +16,7 @@ export default function SetupPage() {
   const router = useRouter();
   const { me, loading: authLoading, authError, signInUrl, signOutUrl } = useAgoraAuth();
   const [channel, setChannel] = useState('Product AMA');
+  const [hostName, setHostName] = useState('');
   const [topic, setTopic] = useState('');
   const [mode, setMode] = useState('batched');
   const [windowMs, setWindowMs] = useState(20000);
@@ -33,6 +34,7 @@ export default function SetupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channelTitle: channel.trim() || 'Live Stream',
+          hostName: hostName.trim() || 'Host',
           topic: topic.trim(),
           mode,
           collectionWindowMs: windowMs,
@@ -106,6 +108,10 @@ export default function SetupPage() {
           <>
             <Field label="CHANNEL NAME">
               <input value={channel} onChange={(e) => setChannel(e.target.value)} style={inputStyle} />
+            </Field>
+
+            <Field label="YOUR NAME">
+              <input value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="How you'll appear in the chat" style={inputStyle} />
             </Field>
 
             <Field label="TOPIC (OPTIONAL)">

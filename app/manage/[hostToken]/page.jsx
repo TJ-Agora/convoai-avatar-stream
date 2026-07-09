@@ -93,11 +93,11 @@ export default function ManagePage({ params }) {
   const { sendPresence } = channel;
   useEffect(() => {
     if (!rtmCreds?.uid || !live) return;
-    const beat = () => sendPresence(rtmCreds.uid, 'Host');
+    const beat = () => sendPresence(rtmCreds.uid, channel.hostName || 'Host');
     beat();
     const t = setInterval(beat, 15000);
     return () => clearInterval(t);
-  }, [rtmCreds?.uid, live, sendPresence]);
+  }, [rtmCreds?.uid, live, sendPresence, channel.hostName]);
 
   if (authLoading) {
     return <Centered><Spinner /></Centered>;
@@ -148,7 +148,7 @@ export default function ManagePage({ params }) {
     } catch (e) { setError(e.message); }
   };
 
-  const onSend = (text) => channel.sendMessage(text, { uid: rtmCreds?.uid, user: 'Host' });
+  const onSend = (text) => channel.sendMessage(text, { uid: rtmCreds?.uid, user: channel.hostName || 'Host' });
 
   return (
     // Locked to the viewport so only the chat list scrolls (avatar stays pinned).
@@ -175,7 +175,7 @@ export default function ManagePage({ params }) {
           channel={channel}
           isHost
           myUid={rtmCreds?.uid}
-          myName="Host"
+          myName={channel.hostName || 'Host'}
           videoTrack={remoteVideoTrack}
           agentSpeakingState={agentSpeakingState}
           liveCaption={liveCaption}
