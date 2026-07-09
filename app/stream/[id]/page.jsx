@@ -111,8 +111,10 @@ export default function GuestStreamPage({ params }) {
     );
   }
 
+  // Live view locks to the viewport (dvh handles mobile browser chrome) so the
+  // avatar stays pinned and only the chat list scrolls — never the page.
   return (
-    <div style={frame}>
+    <div style={{ ...frame, minHeight: undefined, height: '100dvh', overflow: 'hidden' }}>
       <StreamScreen
         channel={channel}
         isHost={false}

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '../../../../../lib/authGuard.js';
 import { getChannel, getChannelByHostToken } from '../../../../../lib/channelManager.js';
 import { generateClientCredentials } from '../../../../../lib/tokenService.js';
 
@@ -17,6 +18,8 @@ export async function GET(request, { params }) {
     const role = searchParams.get('role') || 'guest';
 
     if (role === 'host') {
+      const { deny } = await requireSession();
+      if (deny) return deny;
       const hostToken = request.headers.get('x-channel-host-token');
       const hostChannel = await getChannelByHostToken(hostToken);
       if (!hostChannel || hostChannel.id !== id) {

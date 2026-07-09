@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAgoraAuth } from '../hooks/useAgoraAuth';
+import SignInCard from './components/SignInCard';
+import { Spinner } from './components/stream/StreamParts';
 
 const WINDOWS = [
   { label: '10s', ms: 10000 },
@@ -11,6 +14,7 @@ const WINDOWS = [
 
 export default function SetupPage() {
   const router = useRouter();
+  const { me, loading: authLoading, authError, signInUrl, signOutUrl } = useAgoraAuth();
   const [channel, setChannel] = useState('Product AMA');
   const [topic, setTopic] = useState('');
   const [mode, setMode] = useState('batched');
@@ -49,6 +53,45 @@ export default function SetupPage() {
     const code = joinCode.trim().split('/').pop();
     if (code) router.push(`/stream/${code}`);
   };
+
+  if (authLoading) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Spinner />
+      </div>
+    );
+  }
+
+  // Hosting is SSO-gated in production; guests never need this page (they get
+  // direct /stream links), but the paste-a-link helper stays public.
+  if (!me?.authenticated) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 24px' }}>
+        <div style={{ width: '100%', maxWidth: 460, display: 'flex', flexDirection: 'column', gap: 44 }}>
+          <SignInCard signInUrl={signInUrl} authError={authError} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <span className="mono" style={labelStyle}>JOINING AS A GUEST? PASTE THE STREAM LINK</span>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') goJoin(); }}
+                placeholder="https://…/stream/abc123"
+                style={{ ...inputStyle, flex: 1, width: 'auto' }}
+              />
+              <button
+                onClick={goJoin}
+                disabled={!joinCode.trim()}
+                style={{ padding: '0 18px', height: 52, borderRadius: 13, border: 'none', background: joinCode.trim() ? 'var(--ink)' : '#D6D6D1', color: '#fff', fontSize: 15, fontWeight: 600, cursor: joinCode.trim() ? 'pointer' : 'not-allowed' }}
+              >
+                Go
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 24px' }}>
@@ -106,6 +149,11 @@ export default function SetupPage() {
                 {busy ? 'Creating…' : 'Create & go live'}
               </button>
               <button onClick={() => setShowJoin(true)} style={linkBtnStyle}>Joining as a guest? Enter here →</button>
+              {me.authMode === 'sso' && (
+                <span style={{ alignSelf: 'center', fontSize: 12, color: 'var(--faint)' }}>
+                  Signed in as {me.user.name} · <a href={signOutUrl} style={{ color: 'var(--muted)' }}>Sign out</a>
+                </span>
+              )}
             </div>
           </>
         ) : (

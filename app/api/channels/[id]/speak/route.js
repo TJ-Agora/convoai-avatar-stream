@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '../../../../../lib/authGuard.js';
 import { getChannelByHostToken } from '../../../../../lib/channelManager.js';
 
 /**
@@ -9,6 +10,8 @@ import { getChannelByHostToken } from '../../../../../lib/channelManager.js';
  */
 export async function POST(request, { params }) {
   try {
+    const { deny } = await requireSession();
+    if (deny) return deny;
     const { id } = params;
     const hostToken = request.headers.get('x-channel-host-token');
     const hostChannel = await getChannelByHostToken(hostToken);

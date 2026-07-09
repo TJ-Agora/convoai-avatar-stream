@@ -34,6 +34,8 @@ npm run dev
 
 The app is available at **http://localhost:4000**.
 
+> **Auth:** in production, creating and managing streams requires **Agora SSO** sign-in (console.agora.io accounts). Guest viewing is fully public. Local dev runs in bypass mode (no credentials needed).
+
 | Route | Who it's for | What it does |
 |---|---|---|
 | `/` | Host / operator | **Setup screen**: name the channel, optionally give the avatar a topic to be knowledgeable about, pick a response mode (Batched / Sequential) and, for batched, a collection window (10/20/30s). **Create & go live** → server returns a guest link + a private host link and redirects to the host page. |

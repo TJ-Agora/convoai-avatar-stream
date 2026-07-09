@@ -26,6 +26,7 @@ yarn-error.log*
 screenshots/
 agora_docs/
 example_project/
+sso/
 
 # deployment
 .vercel/

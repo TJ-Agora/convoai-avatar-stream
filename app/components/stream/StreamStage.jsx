@@ -123,7 +123,10 @@ export default function StreamStage({
 
   return (
     <div style={{
-      flex: 1, minWidth: 0, position: 'relative', background: 'var(--stage)',
+      // Desktop: fill remaining width beside the rail. Mobile: content-sized
+      // and NOT shrinkable — the chat rail scrolls, the stage stays pinned.
+      flex: mobile ? '0 0 auto' : 1,
+      minWidth: 0, position: 'relative', background: 'var(--stage)',
       display: 'flex', flexDirection: 'column', padding: mobile ? '14px 16px' : '26px 28px', gap: mobile ? 12 : 0,
     }}>
       {/* top: state pill + HUD */}

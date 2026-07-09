@@ -6,10 +6,14 @@ import useChannel from '../../hooks/useChannel';
 import useAgora from '../../hooks/useAgora';
 import StreamScreen from '../../components/stream/StreamScreen';
 import { Spinner } from '../../components/stream/StreamParts';
+import { useAgoraAuth } from '../../../hooks/useAgoraAuth';
+import SignInCard from '../../components/SignInCard';
 
 export default function ManagePage({ params }) {
   const { hostToken } = params;
   const router = useRouter();
+  const { me, loading: authLoading, authError, signInUrl } = useAgoraAuth();
+  const authed = !!me?.authenticated;
   const [channelId, setChannelId] = useState(null);
   const [resolveError, setResolveError] = useState(null);
   const [creds, setCreds] = useState(null);       // useAgora — host role, UID_A
@@ -18,8 +22,10 @@ export default function ManagePage({ params }) {
   const [copied, setCopied] = useState(false);
   const startedRef = useRef(false);
 
-  // Resolve host token → channel id.
+  // Resolve host token → channel id. Gated on auth so an unauthenticated
+  // visitor doesn't fire 401ing bootstrap requests (SSO mode).
   useEffect(() => {
+    if (!authed) return;
     let alive = true;
     fetch(`/api/channels/by-host-token/${hostToken}`)
       .then((res) => {
@@ -29,7 +35,7 @@ export default function ManagePage({ params }) {
       .then((data) => { if (alive) setChannelId(data.id); })
       .catch((err) => { if (alive) setResolveError(err.message); });
     return () => { alive = false; };
-  }, [hostToken]);
+  }, [hostToken, authed]);
 
   // Mint host + guest creds (two RTM identities).
   useEffect(() => {
@@ -92,6 +98,20 @@ export default function ManagePage({ params }) {
     return () => clearInterval(t);
   }, [rtmCreds?.uid, live, sendPresence]);
 
+  if (authLoading) {
+    return <Centered><Spinner /></Centered>;
+  }
+  if (!authed) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 24px' }}>
+        <SignInCard
+          signInUrl={signInUrl}
+          authError={authError}
+          note="After signing in, reopen this host link."
+        />
+      </div>
+    );
+  }
   if (resolveError) {
     return <Centered><span style={{ color: 'var(--red)', fontSize: 14 }}>{resolveError}</span></Centered>;
   }
@@ -122,7 +142,8 @@ export default function ManagePage({ params }) {
   const onSend = (text) => channel.sendMessage(text, { uid: rtmCreds?.uid, user: 'Host' });
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--panel)' }}>
+    // Locked to the viewport so only the chat list scrolls (avatar stays pinned).
+    <div style={{ height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--panel)' }}>
       {/* host toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 18px', borderBottom: '1px solid var(--line-2)', flexShrink: 0, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{channel.channelTitle || 'Live Stream'}</span>
