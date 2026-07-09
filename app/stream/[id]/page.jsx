@@ -5,6 +5,7 @@ import useChannel from '../../hooks/useChannel';
 import useAgora from '../../hooks/useAgora';
 import StreamScreen from '../../components/stream/StreamScreen';
 import { Spinner } from '../../components/stream/StreamParts';
+import ErrorScreen from '../../components/ErrorScreen';
 
 const emailValid = (e) => !e || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
 
@@ -84,6 +85,19 @@ export default function GuestStreamPage({ params }) {
 
   // --- Render gates ---
 
+  // Bad or expired stream link — give the visitor a way out, not a dead end.
+  if (credsError) {
+    return (
+      <ErrorScreen
+        eyebrow="STREAM NOT FOUND"
+        title="This stream isn't live"
+        body="It may have ended (streams clean up about 30 minutes after finishing), or the link may be mistyped. Ask the host for a fresh link."
+        ctaHref="/"
+        ctaLabel="Go to home"
+      />
+    );
+  }
+
   if (!name && !isOver) {
     return <JoinGate channel={channel} name={nameInput} email={emailInput} onName={setNameInput} onEmail={setEmailInput} onSubmit={submitJoin} error={credsError} />;
   }
@@ -92,11 +106,13 @@ export default function GuestStreamPage({ params }) {
 
   if (isOver) {
     return (
-      <div style={{ ...frame, alignItems: 'center', justifyContent: 'center', gap: 12, textAlign: 'center', padding: 24 }}>
-        <span className="mono" style={{ fontSize: 11, letterSpacing: '0.12em', color: 'var(--faint-2)' }}>STREAM ENDED</span>
-        <span className="serif" style={{ fontSize: 28, color: 'var(--ink)' }}>Thanks for watching</span>
-        <span style={{ fontSize: 14, color: 'var(--muted)' }}>You can safely close this tab.</span>
-      </div>
+      <ErrorScreen
+        eyebrow="STREAM ENDED"
+        title="Thanks for watching"
+        body="This stream has ended. You can safely close this tab."
+        ctaHref="/"
+        ctaLabel="Go to home"
+      />
     );
   }
 
@@ -111,8 +127,10 @@ export default function GuestStreamPage({ params }) {
     );
   }
 
+  // Live view locks to the viewport (dvh handles mobile browser chrome) so the
+  // avatar stays pinned and only the chat list scrolls — never the page.
   return (
-    <div style={frame}>
+    <div style={{ ...frame, minHeight: undefined, height: '100dvh', overflow: 'hidden' }}>
       <StreamScreen
         channel={channel}
         isHost={false}

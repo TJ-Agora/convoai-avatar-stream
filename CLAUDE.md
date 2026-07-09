@@ -18,6 +18,16 @@ Features and fixes NEVER go straight to `main`:
 4. **PR**: push the branch, `gh pr create` with a summary + test plan. Merge with `gh pr merge --squash` after the user OKs, then `git checkout main && git pull`.
 5. **Deploy**: `npm run deploy` (runs the test suite, then `vercel deploy --prod` — the suite is the deploy gate). Deploy deliberately: a prod redeploy ends any live streams.
 
+## Auth (Agora SSO — hosts only, production only)
+
+Hosting surfaces are gated behind **Agora SSO** (console.agora.io accounts); **guest viewing is fully public**. Implementation is the internal SSO starter's Path B (vendored files: `lib/auth.ts`, `lib/agora-sso.ts`, `hooks/useAgoraAuth.ts`, `app/api/auth/**`; the `sso/` docs folder is gitignored/internal). Identity = HttpOnly JWT cookie (`SESSION_JWT_SECRET`), no database.
+
+- **Modes** (`authMode()` in `lib/auth.ts`): non-production defaults to `bypass` (synthetic user — local dev needs no credentials); production hard-defaults to `sso` unless `ALLOW_BYPASS_IN_PRODUCTION=true` is explicitly set.
+- **Gated (session required via `requireSession()` in `lib/authGuard.js`, checked BEFORE hostToken):** `POST+GET /api/channels`, `by-host-token`, `credentials?role=host`, `start`, `stop`, `speak`, channel `DELETE`. Pages: `/` (sign-in card, guest paste-a-link stays public) and `/manage/[hostToken]` (sign-in card; bootstrap effects gated on `authed` so no 401 noise).
+- **Public (guests):** `/stream/[id]`, `state`, `message`, `presence`, `agent-state`, `transcript`, `credentials?role=guest`.
+- **TEMPORARY STATE:** SSO credentials are requested but pending. Production currently runs with `AUTH_MODE=bypass` + `ALLOW_BYPASS_IN_PRODUCTION=true` (gate inert, everything works as before). **Flip procedure when creds arrive:** set `AGORA_SSO_CLIENT_ID`, `AGORA_SSO_CLIENT_SECRET`, `AGORA_SSO_REDIRECT_URI=https://convoai-avatar-stream.vercel.app/api/auth/agora/callback` in Vercel prod env; set `AUTH_MODE=sso`; REMOVE `ALLOW_BYPASS_IN_PRODUCTION`; redeploy; verify sign-in/identity/sign-out per `sso/RECIPE.md`'s verification table.
+- Note: `@/*` path alias maps to repo root (`tsconfig.json`) because the vendored files import `@/lib/auth` and this repo has no `src/`.
+
 ## Testing
 
 `npm test` (Vitest) runs the channel-logic suite in `tests/`: real Upstash Redis (creds from `.env.local` via `@next/env`), **Agora fully mocked** (`tests/helpers/agoraMock.js` — no real agents, no cost). Tests exercise `lib/channelManager.js` directly; every test cleans up its channels (`deleteChannel`) so the shared Redis DB stays tidy. Deadline behavior is tested by writing past deadlines into Redis and calling `channel.tick()` — never by sleeping. `npm run test:watch` for development.

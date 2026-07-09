@@ -80,7 +80,7 @@ function PendingAnswerBubble({ liveText }) {
   );
 }
 
-function Composer({ isHost, onSend }) {
+function Composer({ isHost, onSend, mobile }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const send = async () => {
@@ -99,7 +99,9 @@ function Composer({ isHost, onSend }) {
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
         placeholder={isHost ? 'Ask the avatar a question…' : 'Ask a question…'}
-        style={{ flex: 1, height: 42, padding: '0 14px', border: 'none', borderRadius: 11, background: 'var(--stage)', fontSize: 14, color: 'var(--ink)' }}
+        // 16px on mobile: iOS Safari auto-zooms (and stays zoomed) when a
+        // focused input's font-size is below 16px.
+        style={{ flex: 1, height: 42, padding: '0 14px', border: 'none', borderRadius: 11, background: 'var(--stage)', fontSize: mobile ? 16 : 14, color: 'var(--ink)' }}
       />
       <button onClick={send} disabled={busy} style={{ width: 42, height: 42, border: 'none', borderRadius: 11, background: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, cursor: 'pointer' }}>→</button>
     </div>
@@ -164,7 +166,7 @@ export default function ChatRail({ channel, isHost, myUid, onSend, mobile, liveC
       </div>
 
       {/* composer */}
-      <Composer isHost={isHost} onSend={onSend} />
+      <Composer isHost={isHost} onSend={onSend} mobile={mobile} />
     </div>
   );
 }

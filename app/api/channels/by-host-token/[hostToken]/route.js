@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireSession } from '../../../../../lib/authGuard.js';
 import { getChannelByHostToken } from '../../../../../lib/channelManager.js';
 
 /**
@@ -6,6 +7,8 @@ import { getChannelByHostToken } from '../../../../../lib/channelManager.js';
  * /manage/[hostToken] page to bootstrap itself.
  */
 export async function GET(_request, { params }) {
+  const { deny } = await requireSession();
+  if (deny) return deny;
   const { hostToken } = params;
   const channel = await getChannelByHostToken(hostToken);
   if (!channel) return NextResponse.json({ error: 'Not found' }, { status: 404 });
