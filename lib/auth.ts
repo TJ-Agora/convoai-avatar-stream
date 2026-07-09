@@ -25,13 +25,16 @@ export type AuthMode = "sso" | "bypass";
  *
  * Rules:
  *   - AUTH_MODE=sso → "sso"
+ *   - AUTH_MODE unset + NODE_ENV !== production → "bypass" (dev default:
+ *     synthetic user, no credentials needed)
  *   - AUTH_MODE=bypass + NODE_ENV !== production → "bypass"
  *   - AUTH_MODE=bypass + NODE_ENV === production + ALLOW_BYPASS_IN_PRODUCTION=true → "bypass"
  *   - AUTH_MODE=bypass + NODE_ENV === production + no override → "sso" (safety net)
- *   - anything else → "sso" (safe default)
+ *   - anything else → "sso" (safe default — production always fails closed)
  */
 export function authMode(): AuthMode {
   const raw = (process.env.AUTH_MODE || "").toLowerCase();
+  if (raw === "" && process.env.NODE_ENV !== "production") return "bypass";
   if (raw === "bypass") {
     if (process.env.NODE_ENV !== "production") return "bypass";
     if (process.env.ALLOW_BYPASS_IN_PRODUCTION === "true") return "bypass";
