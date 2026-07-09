@@ -3,6 +3,7 @@ node_modules/
 
 # next.js build output
 .next/
+.next-verify/
 out/
 
 # environment — real credentials live in .env.local (never commit)

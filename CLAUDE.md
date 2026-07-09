@@ -13,7 +13,7 @@ This is a **demo project** forked from an earlier "AI Auctioneer" build — it r
 Features and fixes NEVER go straight to `main`:
 
 1. **Branch**: `git checkout -b feat/<slug>` (or `fix/<slug>`).
-2. **Implement**, then verify locally: `npm run build` green AND `npm test` green.
+2. **Implement**, then verify locally: `npm run build` green AND `npm test` green. If the user's dev server may be running, build with `NEXT_DIST_DIR=.next-verify npm run build` — a shared `.next` between build and dev corrupts the dev server's webpack cache (ENOENT noise / unhandledRejections).
 3. **Hand off for local testing**: the user tests on their own dev server (`npm run dev`, port 4000). **STOP and wait for their explicit approval** — do not push, PR, or deploy before it.
 4. **PR**: push the branch, `gh pr create` with a summary + test plan. Merge with `gh pr merge --squash` after the user OKs, then `git checkout main && git pull`.
 5. **Deploy**: `npm run deploy` (runs the test suite, then `vercel deploy --prod` — the suite is the deploy gate). Deploy deliberately: a prod redeploy ends any live streams.
