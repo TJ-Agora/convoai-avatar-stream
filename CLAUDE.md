@@ -8,6 +8,22 @@ This is a **demo project** forked from an earlier "AI Auctioneer" build — it r
 
 ---
 
+## Development Workflow (ALWAYS follow this)
+
+Features and fixes NEVER go straight to `main`:
+
+1. **Branch**: `git checkout -b feat/<slug>` (or `fix/<slug>`).
+2. **Implement**, then verify locally: `npm run build` green AND `npm test` green.
+3. **Hand off for local testing**: the user tests on their own dev server (`npm run dev`, port 4000). **STOP and wait for their explicit approval** — do not push, PR, or deploy before it.
+4. **PR**: push the branch, `gh pr create` with a summary + test plan. Merge with `gh pr merge --squash` after the user OKs, then `git checkout main && git pull`.
+5. **Deploy**: `npm run deploy` (runs the test suite, then `vercel deploy --prod` — the suite is the deploy gate). Deploy deliberately: a prod redeploy ends any live streams.
+
+## Testing
+
+`npm test` (Vitest) runs the channel-logic suite in `tests/`: real Upstash Redis (creds from `.env.local` via `@next/env`), **Agora fully mocked** (`tests/helpers/agoraMock.js` — no real agents, no cost). Tests exercise `lib/channelManager.js` directly; every test cleans up its channels (`deleteChannel`) so the shared Redis DB stays tidy. Deadline behavior is tested by writing past deadlines into Redis and calling `channel.tick()` — never by sleeping. `npm run test:watch` for development.
+
+---
+
 ## Architecture
 
 Next.js 14 (App Router) with API routes for server logic and React client pages for the UI. Per-channel state lives in Upstash Redis (atomic native structures; short NX locks serialize cross-instance dispatch). There are NO in-process timers: batch/welcome windows are deadline fields in Redis, driven by `tickChannel()` on hot routes plus a client poke when the HUD countdown hits zero. RTM carries both Conversational-AI events (toolkit-mediated) and server→client state broadcasts — snapshots carry a monotonic `rev` so clients drop out-of-order broadcasts.

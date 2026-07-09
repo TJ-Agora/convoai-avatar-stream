@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { StatePill, AvatarStage } from './StreamParts';
+import JoinQr from './JoinQr';
 
 function fmt(s) {
   const sec = Math.max(0, Math.floor(s));
@@ -68,13 +69,11 @@ function HUD({ mode, batchPhase, batchCount, batchDeadline, collectionWindowMs, 
   );
 }
 
-/** Host controls under the stage: Add Script → Speak, Mute, mode chip. */
-function HostControls({ mode, collectionWindowMs, isMuted, onToggleMute, onSpeakScript }) {
+/** Host controls under the stage: Add Script → Speak, Mute, join-QR (desktop). */
+function HostControls({ isMuted, onToggleMute, onSpeakScript, qr }) {
   const [scriptOpen, setScriptOpen] = useState(false);
   const [scriptText, setScriptText] = useState('');
   const [busy, setBusy] = useState(false);
-
-  const modeChip = mode === 'batched' ? `BATCHED ${Math.round((collectionWindowMs || 30000) / 1000)}s` : 'SEQUENTIAL';
 
   const send = async () => {
     const t = scriptText.trim();
@@ -100,12 +99,10 @@ function HostControls({ mode, collectionWindowMs, isMuted, onToggleMute, onSpeak
           <button onClick={send} disabled={busy || !scriptText.trim()} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Speak</button>
         </div>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
         <button onClick={() => setScriptOpen((o) => !o)} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>+ Add Script</button>
         <button onClick={onToggleMute} style={{ height: 44, padding: '0 18px', borderRadius: 12, border: '1px solid #DBDBD6', background: isMuted ? 'var(--stage)' : 'var(--panel)', color: 'var(--ink)', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>{isMuted ? 'Unmute agent' : 'Mute agent'}</button>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, height: 44, padding: '0 16px', borderRadius: 12, background: '#EAEAE6' }}>
-          <span className="mono" style={{ fontSize: 11, letterSpacing: '0.06em', color: 'var(--muted)' }}>{modeChip}</span>
-        </div>
+        {qr && <div style={{ marginLeft: 'auto' }}>{qr}</div>}
       </div>
     </div>
   );
@@ -149,15 +146,23 @@ export default function StreamStage({
         <AvatarStage videoTrack={videoTrack} caption={caption} width={avatarW} height={avatarH} aspectRatio={avatarAspect} radius={radius} />
       </div>
 
-      {/* host controls */}
+      {/* host controls (desktop hosts get the join-QR in-row, where the mode
+          chip used to be — in-flow so the script input never overlaps it) */}
       {isHost && (
         <HostControls
-          mode={channel.mode}
-          collectionWindowMs={channel.collectionWindowMs}
           isMuted={isMuted}
           onToggleMute={onToggleMute}
           onSpeakScript={onSpeakScript}
+          qr={!mobile ? <JoinQr channelId={channel.channelName} /> : null}
         />
+      )}
+
+      {/* Guests have no controls row — float the QR bottom-right of the stage.
+          Desktop only: scanning a QR on the phone you're holding is pointless. */}
+      {!isHost && !mobile && (
+        <div style={{ position: 'absolute', right: 28, bottom: 26 }}>
+          <JoinQr channelId={channel.channelName} />
+        </div>
       )}
     </div>
   );
