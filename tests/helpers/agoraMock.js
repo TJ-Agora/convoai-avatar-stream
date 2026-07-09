@@ -14,15 +14,22 @@ export const calls = {
 };
 
 let historyContents = [];
+let historyDelayMs = 0;
 
 /** Configure what getAgentHistory returns (array of {role, content, turn_id}). */
 export function setHistory(contents) {
   historyContents = contents;
 }
 
+/** Simulate a slow history API (races between sync and new messages). */
+export function setHistoryDelay(ms) {
+  historyDelayMs = ms;
+}
+
 export function resetMock() {
   for (const key of Object.keys(calls)) calls[key].length = 0;
   historyContents = [];
+  historyDelayMs = 0;
 }
 
 export async function joinAgent(channelName, agentName, ttsVendor, avatarVendor, extraConfig = {}) {
@@ -58,6 +65,7 @@ export async function queryAgent() {
 }
 
 export async function getAgentHistory(agentId) {
+  if (historyDelayMs) await new Promise((r) => setTimeout(r, historyDelayMs));
   return { agent_id: agentId, channel: '', contents: historyContents, status: 'RUNNING' };
 }
 

@@ -109,6 +109,31 @@ describe('agent transcripts → chat feed', () => {
     expect(noGreeting(s.messages).map((m) => m.text)).toEqual(['Q1', 'A1', 'Q2', 'A2']);
   });
 
+  it('a message arriving during a SLOW history sync cannot steal the anchor (lock held)', async () => {
+    const { channel } = await liveChannel(t, { mode: 'sequential' });
+    await channel.sendMessage({ uid: '1', user: 'Mike', text: 'Q1' }); // dispatches, anchor=Q1
+
+    // Q1's speech ends; the history API is slow. A new question arrives
+    // mid-sync — it must QUEUE (isSpeaking still held), not dispatch and
+    // overwrite the anchor before A1 lands.
+    agoraMock.setHistory([{ role: 'assistant', content: 'A1', turn_id: 1 }]);
+    agoraMock.setHistoryDelay(400);
+    const release = channel.notifyAgentState('idle');
+    await new Promise((r) => setTimeout(r, 100)); // sync is in flight
+    await channel.sendMessage({ uid: '2', user: 'Sarah', text: 'Q2' });
+    await release;
+
+    agoraMock.setHistoryDelay(0);
+    agoraMock.setHistory([
+      { role: 'assistant', content: 'A1', turn_id: 1 },
+      { role: 'assistant', content: 'A2', turn_id: 2 },
+    ]);
+    await channel.notifyAgentState('idle');
+
+    const s = await channel.getState();
+    expect(noGreeting(s.messages).map((m) => m.text)).toEqual(['Q1', 'A1', 'Q2', 'A2']);
+  });
+
   it('broadcast revs are strictly increasing', async () => {
     const { channel } = await liveChannel(t, { mode: 'sequential' });
     await channel.sendMessage({ uid: '1', user: 'A', text: 'q1' });
