@@ -36,7 +36,8 @@ function QueueList({ queue, myUid }) {
 function MessageBubble({ m, myUid }) {
   const self = String(m.uid) === String(myUid);
   const agent = m.kind === 'agent';
-  const dark = self || agent;
+  // Only the current user's own messages are dark — the avatar reads as just
+  // another participant (light grey), distinguished by its label.
   const agentLabel = m.scripted ? 'AGENT · SCRIPTED' : (m.interrupted ? 'AVATAR · INTERRUPTED' : 'AVATAR');
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: self ? 'flex-end' : 'flex-start' }}>
@@ -44,8 +45,8 @@ function MessageBubble({ m, myUid }) {
         {agent ? agentLabel : (self ? 'YOU' : m.user)}
       </span>
       <div style={{
-        background: dark ? 'var(--ink)' : 'var(--stage)',
-        color: dark ? '#fff' : 'var(--ink)',
+        background: self ? 'var(--ink)' : 'var(--stage)',
+        color: self ? '#fff' : 'var(--ink)',
         borderRadius: self ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
         padding: '10px 14px', maxWidth: '88%', fontSize: 14, lineHeight: 1.4,
       }}>{m.text}</div>
@@ -63,7 +64,7 @@ function PendingAnswerBubble({ liveText }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
       <span className="mono" style={{ fontSize: 10, letterSpacing: '0.08em', color: 'var(--faint-2)' }}>AVATAR</span>
       <div style={{
-        background: 'var(--ink)', color: '#fff', borderRadius: '4px 14px 14px 14px',
+        background: 'var(--stage)', color: 'var(--ink)', borderRadius: '4px 14px 14px 14px',
         padding: '10px 14px', maxWidth: '88%', fontSize: 14, lineHeight: 1.4,
       }}>
         {liveText ? (
@@ -71,7 +72,7 @@ function PendingAnswerBubble({ liveText }) {
         ) : (
           <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', height: 14 }}>
             {[0, 0.2, 0.4].map((d, i) => (
-              <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', animation: `think 1.2s ${d}s infinite` }} />
+              <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--ink)', animation: `think 1.2s ${d}s infinite` }} />
             ))}
           </span>
         )}
@@ -120,6 +121,9 @@ export default function ChatRail({ channel, isHost, myUid, onSend, mobile, liveC
   return (
     <div style={{
       width: mobile ? '100%' : 340, flex: mobile ? 1 : undefined, minHeight: 0,
+      // Desktop: explicit height (not stretch) + overflow hidden so a long
+      // feed can only scroll internally — never grow the rail or the page.
+      ...(mobile ? {} : { height: '100%' }), overflow: 'hidden',
       borderLeft: mobile ? 'none' : '1px solid var(--line)', background: 'var(--panel)',
       display: 'flex', flexDirection: 'column',
     }}>

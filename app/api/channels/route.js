@@ -7,9 +7,9 @@ export async function POST(request) {
     const { deny } = await requireSession();
     if (deny) return deny;
     const body = await request.json().catch(() => ({}));
-    const { channelTitle, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed } = body;
+    const { channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed } = body;
 
-    const result = await createChannel({ channelTitle, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed });
+    const result = await createChannel({ channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed });
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error creating channel:', error);

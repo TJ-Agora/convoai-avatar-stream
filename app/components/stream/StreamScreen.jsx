@@ -55,7 +55,9 @@ export default function StreamScreen({
   }
 
   return (
-    <div style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', position: 'relative' }}>
+    // overflow hidden: growth must never propagate to the page — the chat
+    // rail scrolls internally, the stage stays fixed.
+    <div style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', position: 'relative', overflow: 'hidden' }}>
       <StreamStage
         channel={channel} isHost={isHost} videoTrack={videoTrack} displayAgentState={displayAgentState} liveCaption={liveCaption}
         isMuted={isMuted} onToggleMute={onToggleMute} onSpeakScript={onSpeakScript}

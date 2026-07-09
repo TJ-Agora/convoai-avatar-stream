@@ -17,7 +17,7 @@ describe('channel lifecycle', () => {
   });
 
   it('getState returns the snapshot shape', async () => {
-    const c = await t.make({ channelTitle: 'Shape', mode: 'batched', collectionWindowMs: 10000 });
+    const c = await t.make({ channelTitle: 'Shape', hostName: 'TJ', mode: 'batched', collectionWindowMs: 10000 });
     const channel = await getChannel(c.id);
     const s = await channel.getState();
     expect(s.type).toBe('state');
@@ -25,9 +25,16 @@ describe('channel lifecycle', () => {
     expect(s.mode).toBe('batched');
     expect(s.collectionWindowMs).toBe(10000);
     expect(s.channelTitle).toBe('Shape');
+    expect(s.hostName).toBe('TJ');
     expect(s.messages).toEqual([]);
     expect(s.queue).toEqual([]);
     expect(s.presence).toBe(0);
+  });
+
+  it('hostName defaults to Host when not provided', async () => {
+    const c = await t.make({});
+    const channel = await getChannel(c.id);
+    expect((await channel.getState()).hostName).toBe('Host');
   });
 
   it('resolves host token to the channel and rejects unknown tokens', async () => {
