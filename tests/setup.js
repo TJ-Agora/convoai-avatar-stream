@@ -6,7 +6,8 @@ import { readFileSync } from 'fs';
 try {
   for (const line of readFileSync('.env.local', 'utf8').split('\n')) {
     const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
-    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].trim();
+    // Strip inline comments (" # …") the same way dotenv does.
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].split(/\s+#/)[0].trim();
   }
 } catch { /* no .env.local — rely on real env */ }
 
