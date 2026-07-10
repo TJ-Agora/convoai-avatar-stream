@@ -31,9 +31,16 @@ export default function DirectAvatarModal({ open, onClose, onSpeak, onThink, mob
   const [error, setError] = useState(null);
   const textareaRef = useRef(null);
 
+  // Reset ONLY on open transitions. Keyed strictly on `open`: parent renders
+  // (RTM state broadcasts, e.g. speaking→listening) recreate the onClose
+  // closure, and depending on it here re-ran this effect mid-edit — wiping
+  // the text and snapping the mode back to Speak.
+  useEffect(() => {
+    if (open) { setText(''); setError(null); setMode('speak'); }
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
-    setText(''); setError(null); setMode('speak');
     const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
