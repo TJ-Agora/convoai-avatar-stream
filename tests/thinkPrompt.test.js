@@ -82,6 +82,25 @@ describe('host think prompts (/think scripts)', () => {
     expect(Number(m.batchDeadline)).toBeGreaterThan(Date.now());
   });
 
+  it('prompt stranded by an idle lock-contender is recovered by tick()', async () => {
+    const { acquireLock, releaseLock, lockKey } = await import('../lib/channelStore.js');
+    const { channel, id } = await liveChannel(t, { mode: 'batched', collectionWindowMs: 10000 });
+
+    // Simulate an idle contender (e.g. a /state tick closing an empty batch
+    // window): hold the dispatch lock through thinkScript's retry, so the
+    // prompt queues — and since the holder never speaks, no speech release
+    // will ever drain it.
+    await acquireLock(lockKey(id, 'dispatch'), 10000);
+    await channel.thinkScript('Shout out the sponsors.');
+    expect(agoraMock.calls.think).toHaveLength(0); // queued, not dispatched
+    await releaseLock(lockKey(id, 'dispatch'));
+
+    // Any hot-route tick recovers it — no speech release required.
+    await channel.tick();
+    expect(agoraMock.calls.think).toHaveLength(1);
+    expect(agoraMock.calls.think[0].text).toBe('Shout out the sponsors.');
+  });
+
   it('rejects when there is no active agent', async () => {
     const c = await t.make({ mode: 'sequential' });
     const { getChannel } = await import('../lib/channelManager.js');
