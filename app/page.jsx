@@ -12,6 +12,16 @@ const WINDOWS = [
   { label: '30s', ms: 30000 },
 ];
 
+const AVATAR_VENDORS = ['anam', 'lemonslice', 'heygen'];
+
+// Avatar provider is a URL switch, not a form control: /?avatar=lemonslice.
+// Read lazily (not useSearchParams) so the page needs no Suspense boundary.
+function avatarFromQuery() {
+  if (typeof window === 'undefined') return 'anam';
+  const v = new URLSearchParams(window.location.search).get('avatar');
+  return AVATAR_VENDORS.includes(v) ? v : 'anam';
+}
+
 export default function SetupPage() {
   const router = useRouter();
   const { me, loading: authLoading, authError, signInUrl, signOutUrl } = useAgoraAuth();
@@ -39,7 +49,7 @@ export default function SetupPage() {
           mode,
           collectionWindowMs: windowMs,
           ttsVendor: 'preset_minimax',
-          avatarVendor: 'anam',
+          avatarVendor: avatarFromQuery(),
         }),
       });
       const data = await res.json();

@@ -212,6 +212,18 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
     return data;
   }, [channelId, hostHeaders]);
 
+  // Host LLM prompt — the agent reacts to the text in its own words; the
+  // prompt never appears in the feed ("answer only").
+  const thinkScript = useCallback(async (text) => {
+    const res = await fetch(`/api/channels/${channelId}/think`, {
+      method: 'POST', headers: hostHeaders(),
+      body: JSON.stringify({ text }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    return data;
+  }, [channelId, hostHeaders]);
+
   // hostUid: the host tab's RTC UID — the agent watches it for join/leave
   // (native greeting + idle detection).
   const start = useCallback(async (hostUid) => {
@@ -253,6 +265,7 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
     channelId,
     sendMessage,
     speakScript,
+    thinkScript,
     start,
     stop,
     sendPresence,
