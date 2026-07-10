@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { StatePill, AvatarStage } from './StreamParts';
 import JoinQr from './JoinQr';
+import DirectAvatarModal from './DirectAvatarModal';
 
 function fmt(s) {
   const sec = Math.max(0, Math.floor(s));
@@ -69,39 +70,21 @@ function HUD({ mode, batchPhase, batchCount, batchDeadline, collectionWindowMs, 
   );
 }
 
-/** Host controls under the stage: Add Script → Speak, Mute, join-QR (desktop). */
-function HostControls({ isMuted, onToggleMute, onSpeakScript, qr, mobile }) {
-  const [scriptOpen, setScriptOpen] = useState(false);
-  const [scriptText, setScriptText] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  const send = async () => {
-    const t = scriptText.trim();
-    if (!t || busy) return;
-    setBusy(true);
-    try { await onSpeakScript(t); setScriptText(''); setScriptOpen(false); }
-    catch (e) { /* surfaced upstream */ }
-    finally { setBusy(false); }
-  };
+/** Host controls under the stage: Add Script → modal (Speak/Think), Mute, join-QR (desktop). */
+function HostControls({ isMuted, onToggleMute, onSpeakScript, onThinkScript, qr, mobile }) {
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {scriptOpen && (
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <input
-            value={scriptText}
-            onChange={(e) => setScriptText(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-            placeholder="Type what the avatar should say…"
-            autoFocus
-            // 16px on mobile: prevents iOS Safari's focus auto-zoom.
-            style={{ flex: 1, height: 44, padding: '0 16px', border: '1px solid #DBDBD6', borderRadius: 12, fontSize: mobile ? 16 : 14, background: 'var(--panel)' }}
-          />
-          <button onClick={send} disabled={busy || !scriptText.trim()} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>Speak</button>
-        </div>
-      )}
+      <DirectAvatarModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSpeak={onSpeakScript}
+        onThink={onThinkScript}
+        mobile={mobile}
+      />
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-        <button onClick={() => setScriptOpen((o) => !o)} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>+ Add Script</button>
+        <button onClick={() => setModalOpen(true)} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>+ Add Script</button>
         <button onClick={onToggleMute} style={{ height: 44, padding: '0 18px', borderRadius: 12, border: '1px solid #DBDBD6', background: isMuted ? 'var(--stage)' : 'var(--panel)', color: 'var(--ink)', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>{isMuted ? 'Unmute agent' : 'Mute agent'}</button>
         {qr && <div style={{ marginLeft: 'auto' }}>{qr}</div>}
       </div>
@@ -110,7 +93,7 @@ function HostControls({ isMuted, onToggleMute, onSpeakScript, qr, mobile }) {
 }
 
 export default function StreamStage({
-  channel, isHost, videoTrack, displayAgentState, isMuted, onToggleMute, onSpeakScript, mobile, liveCaption,
+  channel, isHost, videoTrack, displayAgentState, isMuted, onToggleMute, onSpeakScript, onThinkScript, mobile, liveCaption,
 }) {
   // Desktop: 75% of the stage's available height (design portrait ratio 272:360).
   // Mobile: fixed, modest footprint so the chat keeps most of the screen.
@@ -158,6 +141,7 @@ export default function StreamStage({
           isMuted={isMuted}
           onToggleMute={onToggleMute}
           onSpeakScript={onSpeakScript}
+          onThinkScript={onThinkScript}
           qr={!mobile ? <JoinQr channelId={channel.channelName} /> : null}
           mobile={mobile}
         />

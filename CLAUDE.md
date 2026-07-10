@@ -23,7 +23,7 @@ Features and fixes NEVER go straight to `main`:
 Hosting surfaces are gated behind **Agora SSO** (console.agora.io accounts); **guest viewing is fully public**. Implementation is the internal SSO starter's Path B (vendored files: `lib/auth.ts`, `lib/agora-sso.ts`, `hooks/useAgoraAuth.ts`, `app/api/auth/**`; the `sso/` docs folder is gitignored/internal). Identity = HttpOnly JWT cookie (`SESSION_JWT_SECRET`), no database.
 
 - **Modes** (`authMode()` in `lib/auth.ts`): non-production defaults to `bypass` (synthetic user — local dev needs no credentials); production hard-defaults to `sso` unless `ALLOW_BYPASS_IN_PRODUCTION=true` is explicitly set.
-- **Gated (session required via `requireSession()` in `lib/authGuard.js`, checked BEFORE hostToken):** `POST+GET /api/channels`, `by-host-token`, `credentials?role=host`, `start`, `stop`, `speak`, channel `DELETE`. Pages: `/` (sign-in card, guest paste-a-link stays public) and `/manage/[hostToken]` (sign-in card; bootstrap effects gated on `authed` so no 401 noise).
+- **Gated (session required via `requireSession()` in `lib/authGuard.js`, checked BEFORE hostToken):** `POST+GET /api/channels`, `by-host-token`, `credentials?role=host`, `start`, `stop`, `speak`, `think`, channel `DELETE`. Pages: `/` (sign-in card, guest paste-a-link stays public) and `/manage/[hostToken]` (sign-in card; bootstrap effects gated on `authed` so no 401 noise).
 - **Public (guests):** `/stream/[id]`, `state`, `message`, `presence`, `agent-state`, `transcript`, `credentials?role=guest`.
 - **TEMPORARY STATE:** SSO credentials are requested but pending. Production currently runs with `AUTH_MODE=bypass` + `ALLOW_BYPASS_IN_PRODUCTION=true` (gate inert, everything works as before). **Flip procedure when creds arrive:** set `AGORA_SSO_CLIENT_ID`, `AGORA_SSO_CLIENT_SECRET`, `AGORA_SSO_REDIRECT_URI=https://convoai-avatar-stream.vercel.app/api/auth/agora/callback` in Vercel prod env; set `AUTH_MODE=sso`; REMOVE `ALLOW_BYPASS_IN_PRODUCTION`; redeploy; verify sign-in/identity/sign-out per `sso/RECIPE.md`'s verification table.
 - Note: `@/*` path alias maps to repo root (`tsconfig.json`) because the vendored files import `@/lib/auth` and this repo has no `src/`.
@@ -67,6 +67,8 @@ One agent is started **per channel** with a friendly-host system prompt (`buildH
 
 - **`/think`** — answers audience questions through the LLM, spoken via TTS. Sequential mode sends one question at a time; batched mode sends one combined prompt per window.
 - **`/speak`** — the host's manual scripted lines (bypasses the LLM, straight to TTS).
+
+The host's **+ Add Script** modal drives both: Speak → `speakScript` (verbatim, shows as AGENT · SCRIPTED), Think → `thinkScript` (host prompt through the LLM; **"answer only"** — the prompt never appears in the feed or caption, no anchor is set, and the answer lands at the feed end like any agent turn). If the avatar is mid-utterance a think prompt queues in the `promptq` LIST; `markSpeechDone` flushes it after deferred welcomes and BEFORE mode logic — the host jumps the guest queue but never interrupts.
 
 The agent join request must enable `advanced_features.enable_rtm: true`, `parameters.data_channel: 'rtm'`, `enable_metrics: true`, and `enable_error_message: true`. The **agent token must include both RTC and RTM privileges** (`RtcTokenBuilder.buildTokenWithRtm2`) — without RTM privileges, presence/state events never reach clients and the speech lock never releases.
 
@@ -176,6 +178,7 @@ Every tab fetches `GET /api/channels/[id]/credentials?role=guest|host` → `{uid
 |---|---|---|
 | **Minimax (preset)** | TTS | Default. Requires `language_boost: 'English'` and `audio_setting.sample_rate: 24000` (else Anam audio sync breaks). |
 | **Anam** | Avatar | Default. `sample_rate: 24000`, `video_encoding: 'H264'`, `quality: 'high'`. |
+| **Lemonslice** | Avatar | No dedicated ConvoAI vendor — uses the **generic avatar** interface: `vendor: 'generic'`, `api_base_url: https://lemonslice.com/api/liveai/agora`, plus `sample_rate: 24000`, `version: 'v1'`, `area`. Selected per channel via the setup-page query param `/?avatar=lemonslice` (allowlist: anam, lemonslice, heygen — no form UI by design). Env: `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID`. |
 | **HeyGen** | Avatar | Custom vendor; `vendor: 'liveavatar'` in Agora config. |
 
 ---

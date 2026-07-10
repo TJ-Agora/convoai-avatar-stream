@@ -190,6 +190,7 @@ export default function ManagePage({ params }) {
           onToggleMute={toggleMute}
           onSend={onSend}
           onSpeakScript={channel.speakScript}
+          onThinkScript={channel.thinkScript}
         />
       )}
 

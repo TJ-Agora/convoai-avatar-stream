@@ -22,7 +22,7 @@ function useIsMobile(breakpoint = 900) {
  */
 export default function StreamScreen({
   channel, isHost, myUid, myName, videoTrack, agentSpeakingState, liveCaption,
-  isMuted, onToggleMute, onSend, onSpeakScript,
+  isMuted, onToggleMute, onSend, onSpeakScript, onThinkScript,
 }) {
   const mobile = useIsMobile();
 
@@ -46,7 +46,7 @@ export default function StreamScreen({
 
         <StreamStage
           channel={channel} isHost={isHost} videoTrack={videoTrack} displayAgentState={displayAgentState} liveCaption={liveCaption}
-          isMuted={isMuted} onToggleMute={onToggleMute} onSpeakScript={onSpeakScript} mobile
+          isMuted={isMuted} onToggleMute={onToggleMute} onSpeakScript={onSpeakScript} onThinkScript={onThinkScript} mobile
         />
 
         <ChatRail channel={channel} isHost={isHost} myUid={myUid} onSend={onSend} liveCaption={liveCaption} mobile />
@@ -60,7 +60,7 @@ export default function StreamScreen({
     <div style={{ width: '100%', flex: 1, minHeight: 0, display: 'flex', position: 'relative', overflow: 'hidden' }}>
       <StreamStage
         channel={channel} isHost={isHost} videoTrack={videoTrack} displayAgentState={displayAgentState} liveCaption={liveCaption}
-        isMuted={isMuted} onToggleMute={onToggleMute} onSpeakScript={onSpeakScript}
+        isMuted={isMuted} onToggleMute={onToggleMute} onSpeakScript={onSpeakScript} onThinkScript={onThinkScript}
       />
       <ChatRail channel={channel} isHost={isHost} myUid={myUid} onSend={onSend} liveCaption={liveCaption} />
 
