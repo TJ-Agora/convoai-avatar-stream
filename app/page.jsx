@@ -34,9 +34,16 @@ export default function SetupPage() {
   const [error, setError] = useState(null);
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState('');
+  const [avatarVendor] = useState(avatarFromQuery);
+  const [avatarImageUrl, setAvatarImageUrl] = useState('');
 
   const create = async () => {
     if (busy) return;
+    const imageUrl = avatarImageUrl.trim();
+    if (imageUrl && !imageUrl.startsWith('https://')) {
+      setError('Avatar image must be a public https:// URL');
+      return;
+    }
     setBusy(true); setError(null);
     try {
       const res = await fetch('/api/channels', {
@@ -49,7 +56,8 @@ export default function SetupPage() {
           mode,
           collectionWindowMs: windowMs,
           ttsVendor: 'preset_minimax',
-          avatarVendor: avatarFromQuery(),
+          avatarVendor,
+          avatarImageUrl: imageUrl || undefined,
         }),
       });
       const data = await res.json();
@@ -127,6 +135,20 @@ export default function SetupPage() {
             <Field label="TOPIC (OPTIONAL)">
               <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What should the avatar be knowledgeable about?" style={inputStyle} />
             </Field>
+
+            {avatarVendor === 'lemonslice' && (
+              <Field label="AVATAR IMAGE URL (OPTIONAL)">
+                <input
+                  value={avatarImageUrl}
+                  onChange={(e) => setAvatarImageUrl(e.target.value)}
+                  placeholder="https://… public portrait image (blank = default avatar)"
+                  style={inputStyle}
+                />
+                <span style={{ fontSize: 12, color: 'var(--faint)', lineHeight: 1.4 }}>
+                  Lemonslice animates this image live. Best: face large in frame, neutral expression, portrait ≈368×560, under 4MB.
+                </span>
+              </Field>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <span className="mono" style={labelStyle}>RESPONSE MODE</span>
