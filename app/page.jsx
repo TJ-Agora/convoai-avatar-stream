@@ -41,9 +41,13 @@ export default function SetupPage() {
   const create = async () => {
     if (busy) return;
     const imageUrl = avatarImageUrl.trim();
-    if (imageUrl && !imageUrl.startsWith('https://')) {
-      setError('Avatar image must be a public https:// URL');
-      return;
+    if (imageUrl) {
+      let ok = false;
+      try { const u = new URL(imageUrl); ok = u.protocol === 'https:' && !!u.hostname; } catch { /* malformed */ }
+      if (!ok) {
+        setError('Avatar image must be a valid public https:// URL');
+        return;
+      }
     }
     setBusy(true); setError(null);
     try {
