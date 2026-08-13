@@ -34,9 +34,21 @@ export default function SetupPage() {
   const [error, setError] = useState(null);
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState('');
+  const [avatarVendor] = useState(avatarFromQuery);
+  const [avatarImageUrl, setAvatarImageUrl] = useState('');
+  const [voiceGender, setVoiceGender] = useState('female');
 
   const create = async () => {
     if (busy) return;
+    const imageUrl = avatarImageUrl.trim();
+    if (imageUrl) {
+      let ok = false;
+      try { const u = new URL(imageUrl); ok = u.protocol === 'https:' && !!u.hostname; } catch { /* malformed */ }
+      if (!ok) {
+        setError('Avatar image must be a valid public https:// URL');
+        return;
+      }
+    }
     setBusy(true); setError(null);
     try {
       const res = await fetch('/api/channels', {
@@ -49,7 +61,9 @@ export default function SetupPage() {
           mode,
           collectionWindowMs: windowMs,
           ttsVendor: 'preset_minimax',
-          avatarVendor: avatarFromQuery(),
+          avatarVendor,
+          avatarImageUrl: imageUrl || undefined,
+          voiceGender: avatarVendor === 'lemonslice' && imageUrl ? voiceGender : undefined,
         }),
       });
       const data = await res.json();
@@ -127,6 +141,33 @@ export default function SetupPage() {
             <Field label="TOPIC (OPTIONAL)">
               <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What should the avatar be knowledgeable about?" style={inputStyle} />
             </Field>
+
+            {avatarVendor === 'lemonslice' && (
+              <Field label="LEMONSLICE AVATAR IMAGE URL (OPTIONAL)">
+                <input
+                  value={avatarImageUrl}
+                  onChange={(e) => setAvatarImageUrl(e.target.value)}
+                  placeholder="https://… public portrait image (blank = default avatar)"
+                  style={inputStyle}
+                />
+                <span style={{ fontSize: 12, color: 'var(--faint)', lineHeight: 1.4 }}>
+                  Lemonslice animates this image live. Best: face large in frame, neutral expression, portrait ≈368×560, under 4MB.
+                </span>
+                {avatarImageUrl.trim() && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
+                    <span className="mono" style={{ ...labelStyle, fontSize: 10 }}>VOICE</span>
+                    {[['female', 'Female'], ['male', 'Male']].map(([val, label]) => (
+                      <button key={val} onClick={() => setVoiceGender(val)} style={{
+                        height: 30, padding: '0 14px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 500,
+                        border: voiceGender === val ? '2px solid var(--ink)' : '1px solid var(--line-3)',
+                        background: voiceGender === val ? 'var(--ink)' : 'var(--panel)',
+                        color: voiceGender === val ? '#fff' : 'var(--ink)',
+                      }}>{label}</button>
+                    ))}
+                  </div>
+                )}
+              </Field>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <span className="mono" style={labelStyle}>RESPONSE MODE</span>

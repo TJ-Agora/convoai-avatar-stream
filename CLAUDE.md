@@ -178,7 +178,7 @@ Every tab fetches `GET /api/channels/[id]/credentials?role=guest|host` → `{uid
 |---|---|---|
 | **Minimax (preset)** | TTS | Default. Requires `language_boost: 'English'` and `audio_setting.sample_rate: 24000` (else Anam audio sync breaks). |
 | **Anam** | Avatar | Default. `sample_rate: 24000`, `video_encoding: 'H264'`, `quality: 'high'`. |
-| **Lemonslice** | Avatar | No dedicated ConvoAI vendor — uses the **generic avatar** interface: `vendor: 'generic'`, `api_base_url: https://lemonslice.com/api/liveai/agora`, plus `sample_rate: 24000`, `version: 'v1'`, `area`. Selected per channel via the setup-page query param `/?avatar=lemonslice` (allowlist: anam, lemonslice, heygen — no form UI by design). Env: `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID`. |
+| **Lemonslice** | Avatar | No dedicated ConvoAI vendor — uses the **generic avatar** interface: `vendor: 'generic'`, `api_base_url: https://lemonslice.com/api/liveai/agora`, plus `sample_rate: 24000`, `version: 'v1'`, `area`. Selected per channel via the setup-page query param `/?avatar=lemonslice` (allowlist: anam, lemonslice, heygen — no vendor form UI by design; when active, the form shows an optional AVATAR IMAGE URL field). `avatar_id` accepts a Lemonslice agent id OR a public https image URL — the per-stream image (stored as `avatarImageUrl` in meta) wins over the `LEMONSLICE_AVATAR_ID` env default. Env: `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID`. |
 | **HeyGen** | Avatar | Custom vendor; `vendor: 'liveavatar'` in Agora config. |
 
 ---

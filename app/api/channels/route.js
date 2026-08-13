@@ -7,9 +7,20 @@ export async function POST(request) {
     const { deny } = await requireSession();
     if (deny) return deny;
     const body = await request.json().catch(() => ({}));
-    const { channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed } = body;
+    const { channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed, avatarImageUrl, voiceGender } = body;
 
-    const result = await createChannel({ channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed });
+    // Optional per-stream avatar image (Lemonslice): their servers fetch it,
+    // so it must be a well-formed https URL with a real host — parse, don't
+    // prefix-match (catches "https://", "https:// not-a-host"; accepts HTTPS://).
+    if (avatarImageUrl) {
+      let parsed = null;
+      try { parsed = new URL(avatarImageUrl); } catch { /* malformed */ }
+      if (!parsed || parsed.protocol !== 'https:' || !parsed.hostname) {
+        return NextResponse.json({ error: 'avatarImageUrl must be a valid public https:// URL' }, { status: 400 });
+      }
+    }
+
+    const result = await createChannel({ channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed, avatarImageUrl, voiceGender });
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error creating channel:', error);

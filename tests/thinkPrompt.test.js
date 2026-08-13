@@ -116,4 +116,25 @@ describe('lemonslice avatar vendor', () => {
     expect(agoraMock.calls.join[0].avatarVendor).toBe('lemonslice');
     expect((await channel.getState()).status).toBe('LIVE');
   });
+
+  it('per-stream avatarImageUrl flows from createChannel into joinAgent extraConfig', async () => {
+    await liveChannel(t, {
+      mode: 'sequential', avatarVendor: 'lemonslice',
+      avatarImageUrl: 'https://example.com/face.jpg',
+    });
+    expect(agoraMock.calls.join[0].extra.avatarImageUrl).toBe('https://example.com/face.jpg');
+  });
+
+  it('no avatarImageUrl → undefined in extraConfig (env default applies downstream)', async () => {
+    await liveChannel(t, { mode: 'sequential', avatarVendor: 'lemonslice' });
+    expect(agoraMock.calls.join[0].extra.avatarImageUrl).toBeUndefined();
+  });
+
+  it('voiceGender flows through to joinAgent; invalid values are dropped', async () => {
+    await liveChannel(t, { mode: 'sequential', avatarVendor: 'lemonslice', voiceGender: 'male' });
+    expect(agoraMock.calls.join[0].extra.voiceGender).toBe('male');
+    agoraMock.resetMock();
+    await liveChannel(t, { mode: 'sequential', avatarVendor: 'lemonslice', voiceGender: 'robot' });
+    expect(agoraMock.calls.join[0].extra.voiceGender).toBeUndefined();
+  });
 });
