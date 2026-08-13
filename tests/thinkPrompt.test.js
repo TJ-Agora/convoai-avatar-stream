@@ -129,4 +129,12 @@ describe('lemonslice avatar vendor', () => {
     await liveChannel(t, { mode: 'sequential', avatarVendor: 'lemonslice' });
     expect(agoraMock.calls.join[0].extra.avatarImageUrl).toBeUndefined();
   });
+
+  it('voiceGender flows through to joinAgent; invalid values are dropped', async () => {
+    await liveChannel(t, { mode: 'sequential', avatarVendor: 'lemonslice', voiceGender: 'male' });
+    expect(agoraMock.calls.join[0].extra.voiceGender).toBe('male');
+    agoraMock.resetMock();
+    await liveChannel(t, { mode: 'sequential', avatarVendor: 'lemonslice', voiceGender: 'robot' });
+    expect(agoraMock.calls.join[0].extra.voiceGender).toBeUndefined();
+  });
 });
