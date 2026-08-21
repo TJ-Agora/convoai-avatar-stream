@@ -38,8 +38,8 @@ The app is available at **http://localhost:4000**.
 
 | Route | Who it's for | What it does |
 |---|---|---|
-| `/` | Host / operator | **Setup screen**: name the channel, optionally give the avatar a topic to be knowledgeable about, pick a response mode (Batched / Sequential) and, for batched, a collection window (10/20/30s). **Create & go live** → server returns a guest link + a private host link and redirects to the host page. |
-| `/manage/[hostToken]` | Host | Live console: the avatar goes live automatically and greets the room when the host connects. The host can broadcast a scripted line ("+ Add Script" → **Speak**), mute the agent locally, ask questions, and copy the guest link. |
+| `/` | Host / operator | **Setup screen**: name the channel, optionally give the avatar a topic to be knowledgeable about, pick a response mode (Batched / Sequential) and, for batched, a collection window (10/20/30s). Opening the page as `/?avatar=lemonslice` switches the stream to a **Lemonslice** avatar and reveals an optional avatar image URL field (Lemonslice animates any public portrait image) plus a Female/Male voice toggle. **Create & go live** → server returns a guest link + a private host link and redirects to the host page. |
+| `/manage/[hostToken]` | Host | Live console: the avatar goes live automatically and greets the room when the host connects. The host can direct the avatar ("+ Add Script" opens a modal: **Speak** says the text verbatim; **Think** sends a hidden prompt through the LLM and the avatar reacts in its own words), mute the agent locally, ask questions, and copy the guest link. |
 | `/stream/[id]` | Guests | Enter a name + email, join the room, watch the avatar, and ask questions in the shared chat. Each new guest is welcomed by name (guests arriving within a few seconds are welcomed together). Unlimited guests per channel. |
 
 ### Running a stream end-to-end
@@ -70,7 +70,9 @@ Required:
 | `AGORA_PASSWORD` | Agora REST API customer secret |
 | `AGORA_APP_CERTIFICATE` | App certificate (needed for token generation; enable token auth in the Agora Console) |
 | `ANAM_API_KEY`, `ANAM_AVATAR_ID` | Anam avatar credentials (the avatar is on by default) |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (channel state) — auto-provisioned by the Vercel Marketplace integration |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (channel state) — from the Vercel Marketplace integration, or any Upstash database's REST credentials |
+| `SESSION_JWT_SECRET` | Signs the host session cookie (`openssl rand -hex 48`) |
+| `AUTH_MODE` + `AGORA_SSO_CLIENT_ID`, `AGORA_SSO_CLIENT_SECRET`, `AGORA_SSO_REDIRECT_URI` | Agora SSO for hosting surfaces. Local dev: `AUTH_MODE=bypass`, no credentials needed. Production: `AUTH_MODE=sso` + credentials from the Agora SSO team |
 
 Optional (defaults shown):
 
@@ -78,6 +80,8 @@ Optional (defaults shown):
 |---|---|---|
 | `AGORA_PRESET_ASR_LLM` | `deepgram_nova_3,openai_gpt_4o_mini` | ASR + LLM portion of the agent preset (Minimax TTS is appended automatically) |
 | `MINIMAX_VOICE_ID` | `English_captivating_female1` | Minimax TTS voice |
+| `MINIMAX_VOICE_ID_MALE` | `English_expressive_narrator` | Voice used when the Lemonslice form's toggle is set to Male |
+| `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID` | — | Lemonslice avatar (`/?avatar=lemonslice`); AVATAR_ID takes an agent id or a public image URL |
 | `TTS_SPEED` | `1.0` | TTS playback speed multiplier |
 | `AVATAR_AGORA_UID` | `102` | RTC UID the avatar's video track publishes on |
 

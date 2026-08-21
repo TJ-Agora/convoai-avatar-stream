@@ -101,15 +101,22 @@ convoai_stream/
 │   ├── page.jsx                        ← Setup screen (create a channel)
 │   ├── stream/[id]/page.jsx            ← Guest room (join gate → connecting → stream)
 │   ├── manage/[hostToken]/page.jsx     ← Host console
+│   ├── components/
+│   │   ├── ConfirmModal.jsx            ← Design-language confirm dialog (End stream)
+│   │   ├── ErrorScreen.jsx             ← Invalid-link / ended-stream screens
+│   │   └── SignInCard.jsx              ← Agora SSO sign-in card (/ and /manage)
 │   ├── components/stream/
 │   │   ├── StreamScreen.jsx            ← Responsive orchestrator (desktop/mobile), composes stage + rail
 │   │   ├── StreamStage.jsx             ← Avatar stage: state pill, HUD, live caption, host controls
 │   │   ├── ChatRail.jsx                ← Presence, sequential queue, message feed, composer
+│   │   ├── DirectAvatarModal.jsx       ← + Add Script modal: Speak (verbatim) / Think (LLM prompt)
+│   │   ├── JoinQr.jsx                  ← Scan-to-join QR (desktop)
 │   │   └── StreamParts.jsx             ← StatePill, LivePill, PresencePill, AvatarStage, Spinner, CaptionBars
 │   ├── lib/                            ← Client-side helpers (TypeScript)
 │   │   ├── conversational-ai-api/      ← Vendored Agora Web toolkit (agent-state events)
 │   │   └── latency-metrics.ts          ← Stub the toolkit imports
 │   ├── hooks/
+│   │   ├── useAgoraAuth.ts             ← Client auth state (me/signInUrl/signOutUrl); vendored SSO
 │   │   ├── useChannel.js               ← Subscribes to id as RTM channel; state snapshot + actions (sendMessage, speakScript, start, stop, sendPresence)
 │   │   └── useAgora.js                 ← RTC + RTM client mgmt + toolkit init. mode='live' + audience role.
 │   └── api/
@@ -126,7 +133,8 @@ convoai_stream/
 │       │       ├── transcript/route.js         ← Clients post finished agent turns (deduped by turn_id)
 │       │       ├── start/route.js              ← Host-only: agent join + go live
 │       │       ├── stop/route.js               ← Host-only
-│       │       └── speak/route.js              ← Host-only manual TTS script
+│       │       ├── speak/route.js              ← Host-only manual TTS script
+│       │       └── think/route.js              ← Host-only LLM prompt (answer-only)
 │       └── agents/                     ← list, stop, stop-all (Agora-platform tools, not per-channel)
 └── public/
 ```
@@ -178,14 +186,14 @@ Every tab fetches `GET /api/channels/[id]/credentials?role=guest|host` → `{uid
 |---|---|---|
 | **Minimax (preset)** | TTS | Default. Requires `language_boost: 'English'` and `audio_setting.sample_rate: 24000` (else Anam audio sync breaks). |
 | **Anam** | Avatar | Default. `sample_rate: 24000`, `video_encoding: 'H264'`, `quality: 'high'`. |
-| **Lemonslice** | Avatar | No dedicated ConvoAI vendor — uses the **generic avatar** interface: `vendor: 'generic'`, `api_base_url: https://lemonslice.com/api/liveai/agora`, plus `sample_rate: 24000`, `version: 'v1'`, `area`. Selected per channel via the setup-page query param `/?avatar=lemonslice` (allowlist: anam, lemonslice, heygen — no vendor form UI by design; when active, the form shows an optional AVATAR IMAGE URL field). `avatar_id` accepts a Lemonslice agent id OR a public https image URL — the per-stream image (stored as `avatarImageUrl` in meta) wins over the `LEMONSLICE_AVATAR_ID` env default. Env: `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID`. |
+| **Lemonslice** | Avatar | No dedicated ConvoAI vendor — uses the **generic avatar** interface: `vendor: 'generic'`, `api_base_url: https://lemonslice.com/api/liveai/agora`, plus `sample_rate: 24000`, `version: 'v1'`, `area`. Selected per channel via the setup-page query param `/?avatar=lemonslice` (allowlist: anam, lemonslice, heygen — no vendor form UI by design; when active, the form shows an optional AVATAR IMAGE URL field; entering an image also reveals a Female/Male voice toggle — `voiceGender` in meta selects `MINIMAX_VOICE_ID` vs `MINIMAX_VOICE_ID_MALE`, default `English_expressive_narrator`). `avatar_id` accepts a Lemonslice agent id OR a public https image URL — the per-stream image (stored as `avatarImageUrl` in meta) wins over the `LEMONSLICE_AVATAR_ID` env default. Env: `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID`. |
 | **HeyGen** | Avatar | Custom vendor; `vendor: 'liveavatar'` in Agora config. |
 
 ---
 
 ## Environment
 
-Runs on **port 4000** (`next dev -p 4000`). See `.env.example` for the full list. Required: `AGORA_APP_ID`, `NEXT_PUBLIC_AGORA_APP_ID`, `AGORA_USERNAME`, `AGORA_PASSWORD`, `AGORA_APP_CERTIFICATE`, `AGORA_PRESET` (+ `AGORA_PRESET_ASR_LLM`). TTS: `MINIMAX_VOICE_ID`, `TTS_SPEED` (default 1.0). Avatar: `AVATAR_AGORA_UID`, `ANAM_API_KEY`, `ANAM_AVATAR_ID` (or HeyGen).
+Runs on **port 4000** (`next dev -p 4000`). See `.env.example` for the full list. Required: `AGORA_APP_ID`, `NEXT_PUBLIC_AGORA_APP_ID`, `AGORA_USERNAME`, `AGORA_PASSWORD`, `AGORA_APP_CERTIFICATE`, `AGORA_PRESET` (+ `AGORA_PRESET_ASR_LLM`). TTS: `MINIMAX_VOICE_ID` (+ `MINIMAX_VOICE_ID_MALE` for the Lemonslice voice toggle), `TTS_SPEED` (default 1.0). Avatar: `AVATAR_AGORA_UID`, `ANAM_API_KEY`, `ANAM_AVATAR_ID` (or HeyGen).
 
 ---
 
