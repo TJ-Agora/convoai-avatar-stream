@@ -43,3 +43,20 @@ describe('authMode()', () => {
     expect(authMode()).toBe('bypass');
   });
 });
+
+// Open-redirect guard for the post-login return path (?next=).
+import { sanitizeReturnPath } from '../lib/auth.ts';
+
+describe('sanitizeReturnPath', () => {
+  it('accepts same-origin relative paths with query strings', () => {
+    expect(sanitizeReturnPath('/?avatar=lemonslice')).toBe('/?avatar=lemonslice');
+    expect(sanitizeReturnPath('/manage/abc123')).toBe('/manage/abc123');
+  });
+  it('rejects absolute, protocol-relative, and empty values', () => {
+    expect(sanitizeReturnPath('https://evil.example')).toBeNull();
+    expect(sanitizeReturnPath('//evil.example')).toBeNull();
+    expect(sanitizeReturnPath('/\\evil.example')).toBeNull();
+    expect(sanitizeReturnPath('')).toBeNull();
+    expect(sanitizeReturnPath(null)).toBeNull();
+  });
+});

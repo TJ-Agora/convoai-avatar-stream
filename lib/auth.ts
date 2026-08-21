@@ -157,3 +157,40 @@ export async function consumeOAuthStateCookie(): Promise<string | null> {
   if (value !== null) jar.delete(OAUTH_STATE_COOKIE);
   return value;
 }
+
+const OAUTH_RETURN_COOKIE = "agora_oauth_return";
+
+/**
+ * Sanitize a post-login return path. Only same-origin relative paths are
+ * allowed (open-redirect guard): must start with "/", must not start with
+ * "//" or "/\\" (protocol-relative), and is length-capped.
+ */
+export function sanitizeReturnPath(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const p = raw.slice(0, 500);
+  if (!p.startsWith("/") || p.startsWith("//") || p.startsWith("/\\")) return null;
+  return p;
+}
+
+/**
+ * Stash where to land after the OAuth round-trip (e.g. "/?avatar=lemonslice"
+ * or a /manage/... console link). Same lifetime/flags as the state cookie.
+ */
+export async function issueReturnPathCookie(path: string): Promise<void> {
+  const jar = await cookies();
+  jar.set(OAUTH_RETURN_COOKIE, path, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: OAUTH_STATE_TTL_SECONDS,
+  });
+}
+
+/** Read + clear the return-path cookie. Returns a SANITIZED path or null. */
+export async function consumeReturnPathCookie(): Promise<string | null> {
+  const jar = await cookies();
+  const value = jar.get(OAUTH_RETURN_COOKIE)?.value ?? null;
+  if (value !== null) jar.delete(OAUTH_RETURN_COOKIE);
+  return sanitizeReturnPath(value);
+}

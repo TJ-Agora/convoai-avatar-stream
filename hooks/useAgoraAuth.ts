@@ -51,7 +51,14 @@ export function useAgoraAuth() {
     loading: me === null,
     authError,
     refreshMe,
-    signInUrl: "/api/auth/agora/start",
+    // Carry the current location through the OAuth round-trip so query
+    // params (/?avatar=lemonslice) and deep links (/manage/…) survive login.
+    signInUrl:
+      typeof window === "undefined"
+        ? "/api/auth/agora/start"
+        : `/api/auth/agora/start?next=${encodeURIComponent(
+            window.location.pathname + window.location.search,
+          )}`,
     signOutUrl: "/api/auth/agora/logout",
   };
 }

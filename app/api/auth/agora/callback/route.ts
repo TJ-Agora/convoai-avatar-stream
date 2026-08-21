@@ -5,6 +5,7 @@ import {
   consumeOAuthStateCookie,
   setSessionCookie,
   signSession,
+  consumeReturnPathCookie,
 } from "@/lib/auth";
 import { exchangeCodeForToken, fetchCustomer } from "@/lib/agora-sso";
 
@@ -58,7 +59,11 @@ export async function GET(request: Request) {
       name: customer.name,
     });
     await setSessionCookie(sessionJwt);
-    return redirectToHome(request);
+    // Land where the user started (stashed by /start), e.g. /?avatar=lemonslice.
+    const returnPath = await consumeReturnPathCookie();
+    return returnPath
+      ? NextResponse.redirect(new URL(returnPath, request.url))
+      : redirectToHome(request);
   } catch (err) {
     console.error("[auth] callback failed:", err);
     return redirectToHome(request, { authError: "exchange_failed" });
