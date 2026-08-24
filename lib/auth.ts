@@ -168,8 +168,20 @@ const OAUTH_RETURN_COOKIE = "agora_oauth_return";
 export function sanitizeReturnPath(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const p = raw.slice(0, 500);
+  // Reject URL control characters outright: the WHATWG parser STRIPS tab/CR/LF
+  // during parsing, so "/\t/evil.example" would survive prefix checks here yet
+  // resolve as protocol-relative "//evil.example" at redirect time.
+  if (/[\u0000-\u001f\u007f]/.test(p)) return null;
   if (!p.startsWith("/") || p.startsWith("//") || p.startsWith("/\\")) return null;
-  return p;
+  // Belt and braces: resolve against a fixed base and require the origin to
+  // survive — catches any remaining parser normalization tricks.
+  try {
+    const u = new URL(p, "https://return.invalid");
+    if (u.origin !== "https://return.invalid") return null;
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return null;
+  }
 }
 
 /**

@@ -59,4 +59,12 @@ describe('sanitizeReturnPath', () => {
     expect(sanitizeReturnPath('')).toBeNull();
     expect(sanitizeReturnPath(null)).toBeNull();
   });
+  it('rejects control-character smuggling (WHATWG parsers strip tab/CR/LF)', () => {
+    // ?next=%2F%09%2Fevil.example → "/\t/evil.example" → would resolve as
+    // protocol-relative "//evil.example" without the control-char guard.
+    expect(sanitizeReturnPath('/\t/evil.example')).toBeNull();
+    expect(sanitizeReturnPath('/\n/evil.example')).toBeNull();
+    expect(sanitizeReturnPath('/\r/evil.example')).toBeNull();
+    expect(sanitizeReturnPath('/\u0000/x')).toBeNull();
+  });
 });
