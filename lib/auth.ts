@@ -157,3 +157,52 @@ export async function consumeOAuthStateCookie(): Promise<string | null> {
   if (value !== null) jar.delete(OAUTH_STATE_COOKIE);
   return value;
 }
+
+const OAUTH_RETURN_COOKIE = "agora_oauth_return";
+
+/**
+ * Sanitize a post-login return path. Only same-origin relative paths are
+ * allowed (open-redirect guard): must start with "/", must not start with
+ * "//" or "/\\" (protocol-relative), and is length-capped.
+ */
+export function sanitizeReturnPath(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const p = raw.slice(0, 500);
+  // Reject URL control characters outright: the WHATWG parser STRIPS tab/CR/LF
+  // during parsing, so "/\t/evil.example" would survive prefix checks here yet
+  // resolve as protocol-relative "//evil.example" at redirect time.
+  if (/[\u0000-\u001f\u007f]/.test(p)) return null;
+  if (!p.startsWith("/") || p.startsWith("//") || p.startsWith("/\\")) return null;
+  // Belt and braces: resolve against a fixed base and require the origin to
+  // survive — catches any remaining parser normalization tricks.
+  try {
+    const u = new URL(p, "https://return.invalid");
+    if (u.origin !== "https://return.invalid") return null;
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Stash where to land after the OAuth round-trip (e.g. "/?avatar=lemonslice"
+ * or a /manage/... console link). Same lifetime/flags as the state cookie.
+ */
+export async function issueReturnPathCookie(path: string): Promise<void> {
+  const jar = await cookies();
+  jar.set(OAUTH_RETURN_COOKIE, path, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: OAUTH_STATE_TTL_SECONDS,
+  });
+}
+
+/** Read + clear the return-path cookie. Returns a SANITIZED path or null. */
+export async function consumeReturnPathCookie(): Promise<string | null> {
+  const jar = await cookies();
+  const value = jar.get(OAUTH_RETURN_COOKIE)?.value ?? null;
+  if (value !== null) jar.delete(OAUTH_RETURN_COOKIE);
+  return sanitizeReturnPath(value);
+}

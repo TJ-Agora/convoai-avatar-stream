@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { authMode, issueOAuthStateCookie } from "@/lib/auth";
+import { authMode, issueOAuthStateCookie, issueReturnPathCookie, sanitizeReturnPath } from "@/lib/auth";
 import { buildAuthorizeUrl } from "@/lib/agora-sso";
 
 /**
@@ -14,9 +14,13 @@ import { buildAuthorizeUrl } from "@/lib/agora-sso";
  * is already "logged in" via authMode() returning "bypass".
  */
 export async function GET(request: Request) {
+  // Optional ?next=<same-origin path> — where to land after login (preserves
+  // e.g. /?avatar=lemonslice or a /manage/... link through the round-trip).
+  const next = sanitizeReturnPath(new URL(request.url).searchParams.get("next"));
   if (authMode() === "bypass") {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL(next ?? "/", request.url));
   }
   const state = await issueOAuthStateCookie();
+  if (next) await issueReturnPathCookie(next);
   return NextResponse.redirect(buildAuthorizeUrl(state));
 }
