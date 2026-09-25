@@ -63,7 +63,7 @@ export default function SetupPage() {
           ttsVendor: 'preset_minimax',
           avatarVendor,
           avatarImageUrl: imageUrl || undefined,
-          voiceGender: avatarVendor === 'lemonslice' && imageUrl ? voiceGender : undefined,
+          voiceGender,
         }),
       });
       const data = await res.json();
@@ -153,21 +153,23 @@ export default function SetupPage() {
                 <span style={{ fontSize: 12, color: 'var(--faint)', lineHeight: 1.4 }}>
                   Lemonslice animates this image live. Best: face large in frame, neutral expression, portrait ≈368×560, under 4MB.
                 </span>
-                {avatarImageUrl.trim() && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
-                    <span className="mono" style={{ ...labelStyle, fontSize: 10 }}>VOICE</span>
-                    {[['female', 'Female'], ['male', 'Male']].map(([val, label]) => (
-                      <button key={val} onClick={() => setVoiceGender(val)} style={{
-                        height: 30, padding: '0 14px', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 500,
-                        border: voiceGender === val ? '2px solid var(--ink)' : '1px solid var(--line-3)',
-                        background: voiceGender === val ? 'var(--ink)' : 'var(--panel)',
-                        color: voiceGender === val ? '#fff' : 'var(--ink)',
-                      }}>{label}</button>
-                    ))}
-                  </div>
-                )}
               </Field>
             )}
+
+            {/* Voice applies to every avatar vendor — match it to the avatar on screen. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <span className="mono" style={labelStyle}>AVATAR VOICE</span>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[['female', 'Female'], ['male', 'Male']].map(([val, label]) => (
+                  <button key={val} onClick={() => setVoiceGender(val)} style={{
+                    flex: 1, height: 46, borderRadius: 12, cursor: 'pointer', fontSize: 15, fontWeight: 500,
+                    border: voiceGender === val ? '2px solid var(--ink)' : '1px solid var(--line-3)',
+                    background: voiceGender === val ? 'var(--ink)' : 'var(--panel)',
+                    color: voiceGender === val ? '#fff' : 'var(--ink)',
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <span className="mono" style={labelStyle}>RESPONSE MODE</span>
