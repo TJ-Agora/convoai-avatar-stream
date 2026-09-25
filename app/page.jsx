@@ -25,7 +25,7 @@ function avatarFromQuery() {
 export default function SetupPage() {
   const router = useRouter();
   const { me, loading: authLoading, authError, signInUrl, signOutUrl } = useAgoraAuth();
-  const [channel, setChannel] = useState('Product AMA');
+  const [channel, setChannel] = useState('thredUP Live Finds');
   const [hostName, setHostName] = useState('');
   const [topic, setTopic] = useState('');
   const [mode, setMode] = useState('batched');
@@ -138,8 +138,8 @@ export default function SetupPage() {
               <input value={hostName} onChange={(e) => setHostName(e.target.value)} placeholder="How you'll appear in the chat" style={inputStyle} />
             </Field>
 
-            <Field label="TOPIC (OPTIONAL)">
-              <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What should the avatar be knowledgeable about?" style={inputStyle} />
+            <Field label="WHAT YOU'RE SHOWING (OPTIONAL)">
+              <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g. fall handbags, kids' outerwear, designer denim under $60" style={inputStyle} />
             </Field>
 
             {avatarVendor === 'lemonslice' && (
