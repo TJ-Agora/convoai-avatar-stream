@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAgoraAuth } from '../hooks/useAgoraAuth';
 import SignInCard from './components/SignInCard';
-import { Spinner } from './components/stream/StreamParts';
+import { Spinner, BrandMark } from './components/stream/StreamParts';
 import { BRAND_IDS, getBrand } from '../lib/brands';
 
 const WINDOWS = [
@@ -111,6 +111,7 @@ export default function SetupPage() {
     return (
       <div data-brand={brandId} style={{ minHeight: '100vh', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 24px' }}>
         <div style={{ width: '100%', maxWidth: 460, display: 'flex', flexDirection: 'column', gap: 44 }}>
+          <BrandMark brand={brandId} size={22} />
           <SignInCard signInUrl={signInUrl} authError={authError} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <span className="mono" style={labelStyle}>JOINING AS A GUEST? PASTE THE STREAM LINK</span>
@@ -125,7 +126,7 @@ export default function SetupPage() {
               <button
                 onClick={goJoin}
                 disabled={!joinCode.trim()}
-                style={{ padding: '0 18px', height: 52, borderRadius: 13, border: 'none', background: joinCode.trim() ? 'var(--ink)' : 'var(--btn-disabled)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: joinCode.trim() ? 'pointer' : 'not-allowed' }}
+                style={{ padding: '0 18px', height: 52, borderRadius: 'var(--r-md)', border: 'none', background: joinCode.trim() ? 'var(--btn-bg)' : 'var(--btn-disabled)', color: 'var(--btn-fg)', fontSize: 15, fontWeight: 600, cursor: joinCode.trim() ? 'pointer' : 'not-allowed' }}
               >
                 Go
               </button>
@@ -140,9 +141,8 @@ export default function SetupPage() {
     <div data-brand={brandId} style={{ minHeight: '100vh', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 24px' }}>
       <div style={{ width: '100%', maxWidth: 540, display: 'flex', flexDirection: 'column', gap: 30 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <span className="mono" style={{ fontSize: 12, letterSpacing: '0.16em', color: 'var(--faint)' }}>
-            {brandId === 'default' ? 'NEW CHANNEL' : `${brand.label.toUpperCase()} · NEW CHANNEL`}
-          </span>
+          <BrandMark brand={brandId} size={22} />
+          <span className="mono" style={{ fontSize: 12, letterSpacing: '0.16em', color: 'var(--faint)' }}>NEW CHANNEL</span>
           <h1 className="serif" style={{ margin: 0, fontSize: 44, lineHeight: 1.05, letterSpacing: '-0.01em', color: 'var(--ink)' }}>Set up your stream</h1>
           <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: 'var(--muted)' }}>Configure how the avatar handles the room before you go live.</p>
         </div>
@@ -201,7 +201,7 @@ export default function SetupPage() {
                 <div style={{ display: 'flex', gap: 10 }}>
                   {[['female', 'Female'], ['male', 'Male']].map(([val, label]) => (
                     <button key={val} onClick={() => setVoiceGender(val)} style={{
-                      flex: 1, height: 46, borderRadius: 12, cursor: 'pointer', fontSize: 15, fontWeight: 500,
+                      flex: 1, height: 46, borderRadius: 'var(--r-md)', cursor: 'pointer', fontSize: 15, fontWeight: 500,
                       border: voiceGender === val ? '2px solid var(--ink)' : '1px solid var(--line-3)',
                       background: voiceGender === val ? 'var(--ink)' : 'var(--panel)',
                       color: voiceGender === val ? '#fff' : 'var(--ink)',
@@ -231,7 +231,7 @@ export default function SetupPage() {
                 <div style={{ display: 'flex', gap: 10 }}>
                   {WINDOWS.map((w) => (
                     <button key={w.ms} onClick={() => setWindowMs(w.ms)} style={{
-                      flex: 1, height: 46, borderRadius: 12, cursor: 'pointer', fontSize: 15, fontWeight: 500,
+                      flex: 1, height: 46, borderRadius: 'var(--r-md)', cursor: 'pointer', fontSize: 15, fontWeight: 500,
                       border: windowMs === w.ms ? '2px solid var(--ink)' : '1px solid var(--line-3)',
                       background: windowMs === w.ms ? 'var(--ink)' : 'var(--panel)',
                       color: windowMs === w.ms ? '#fff' : 'var(--ink)',
@@ -244,7 +244,7 @@ export default function SetupPage() {
             {error && <div style={errorStyle}>{error}</div>}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 4 }}>
-              <button onClick={create} disabled={busy} style={{ height: 56, border: 'none', borderRadius: 14, background: 'var(--ink)', color: '#fff', cursor: busy ? 'wait' : 'pointer', fontSize: 16, fontWeight: 600, opacity: busy ? 0.7 : 1 }}>
+              <button onClick={create} disabled={busy} style={{ height: 56, border: 'none', borderRadius: 'var(--r-lg)', background: 'var(--btn-bg)', color: 'var(--btn-fg)', cursor: busy ? 'wait' : 'pointer', fontSize: 16, fontWeight: 600, opacity: busy ? 0.7 : 1 }}>
                 {busy ? 'Creating…' : 'Create & go live'}
               </button>
               <button onClick={() => setShowJoin(true)} style={linkBtnStyle}>Joining as a guest? Enter here →</button>
@@ -261,7 +261,7 @@ export default function SetupPage() {
               <input value={joinCode} onChange={(e) => setJoinCode(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') goJoin(); }} placeholder="paste the host's stream link" autoFocus style={inputStyle} />
             </Field>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 4 }}>
-              <button onClick={goJoin} disabled={!joinCode.trim()} style={{ height: 56, border: 'none', borderRadius: 14, background: joinCode.trim() ? 'var(--ink)' : 'var(--btn-disabled)', color: joinCode.trim() ? '#fff' : 'var(--faint)', cursor: joinCode.trim() ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600 }}>Go to stream</button>
+              <button onClick={goJoin} disabled={!joinCode.trim()} style={{ height: 56, border: 'none', borderRadius: 'var(--r-lg)', background: joinCode.trim() ? 'var(--btn-bg)' : 'var(--btn-disabled)', color: joinCode.trim() ? 'var(--btn-fg)' : 'var(--faint)', cursor: joinCode.trim() ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600 }}>Go to stream</button>
               <button onClick={() => setShowJoin(false)} style={linkBtnStyle}>← Back to setup</button>
             </div>
           </>
@@ -271,10 +271,10 @@ export default function SetupPage() {
   );
 }
 
-const inputStyle = { height: 52, padding: '0 18px', border: '1px solid var(--line-3)', borderRadius: 13, fontSize: 16, color: 'var(--ink)', background: 'var(--panel)', width: '100%' };
+const inputStyle = { height: 52, padding: '0 18px', border: '1px solid var(--line-3)', borderRadius: 'var(--r-md)', fontSize: 16, color: 'var(--ink)', background: 'var(--panel)', width: '100%' };
 const labelStyle = { fontSize: 11, letterSpacing: '0.08em', color: 'var(--muted)', fontWeight: 500 };
 const linkBtnStyle = { alignSelf: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 500, color: 'var(--muted)' };
-const errorStyle = { padding: '10px 14px', background: 'color-mix(in oklab, var(--red) 10%, transparent)', border: '1px solid color-mix(in oklab, var(--red) 30%, transparent)', borderRadius: 10, fontSize: 13, color: 'var(--red)' };
+const errorStyle = { padding: '10px 14px', background: 'color-mix(in oklab, var(--red) 10%, transparent)', border: '1px solid color-mix(in oklab, var(--red) 30%, transparent)', borderRadius: 'var(--r-sm)', fontSize: 13, color: 'var(--red)' };
 
 function Field({ label, children }) {
   return (
@@ -290,7 +290,7 @@ function ModeTile({ active, onClick, title, desc, photo }) {
     <button onClick={onClick} style={{
       flex: 1, minWidth: 220, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 8,
       border: active ? '2px solid var(--ink)' : '1px solid var(--line-3)', background: 'var(--panel)',
-      borderRadius: 16, padding: active ? '17px 19px' : '18px 20px', cursor: 'pointer',
+      borderRadius: 'var(--r-lg)', padding: active ? '17px 19px' : '18px 20px', cursor: 'pointer',
       boxShadow: active ? '0 0 0 4px rgba(11,11,11,0.05)' : 'none',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>

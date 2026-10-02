@@ -12,7 +12,7 @@ describe('brand registry', () => {
     expect(getBrand('nope').id).toBe('default');
     expect(getBrand(undefined).id).toBe('default');
     expect(getSeller('thredup', 'nope')).toBeNull();
-    expect(getSeller('default', 'partner')).toBeNull();
+    expect(getSeller('default', 'nava')).toBeNull();
   });
 
   it('every greeting starts with "Hey everyone" (tests filter the greeting bubble by that prefix)', () => {
@@ -73,12 +73,12 @@ describe('brand on a channel', () => {
   });
 
   it('thredup seller: resolved server-side, overrides form avatar fields, pins voice', async () => {
-    const seller = getSeller('thredup', 'partner');
+    const seller = getSeller('thredup', 'nava');
     expect(seller).not.toBeNull();
 
     // The form's avatar/voice values must NOT survive — the persona wins.
     const { id, channel } = await liveChannel(t, {
-      mode: 'sequential', brand: 'thredup', sellerId: 'partner',
+      mode: 'sequential', brand: 'thredup', sellerId: 'nava',
       avatarVendor: 'anam', avatarImageUrl: 'https://attacker.example/face.jpg', voiceGender: 'male',
     });
     const join = agoraMock.calls.join[0];
@@ -90,9 +90,9 @@ describe('brand on a channel', () => {
     expect(join.extra.greeting).toContain(seller.name);
 
     const s = await channel.getState();
-    expect(s.seller).toEqual({ id: 'partner', name: seller.name });
+    expect(s.seller).toEqual({ id: 'nava', name: seller.name });
     const m = await meta(id);
-    expect(m.sellerId).toBe('partner');
+    expect(m.sellerId).toBe('nava');
     expect(m.avatarVendor).toBe(seller.avatarVendor);
   });
 
@@ -103,7 +103,7 @@ describe('brand on a channel', () => {
   });
 
   it('sellerId is ignored on a brand with no sellers', async () => {
-    const { channel } = await liveChannel(t, { mode: 'sequential', brand: 'default', sellerId: 'partner', avatarVendor: 'anam' });
+    const { channel } = await liveChannel(t, { mode: 'sequential', brand: 'default', sellerId: 'nava', avatarVendor: 'anam' });
     expect(agoraMock.calls.join[0].avatarVendor).toBe('anam');
     expect((await channel.getState()).seller).toBeNull();
   });

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import useChannel from '../../hooks/useChannel';
 import useAgora from '../../hooks/useAgora';
 import StreamScreen from '../../components/stream/StreamScreen';
-import { Spinner } from '../../components/stream/StreamParts';
+import { Spinner, BrandMark, PromoBar } from '../../components/stream/StreamParts';
 import { useAgoraAuth } from '../../../hooks/useAgoraAuth';
 import SignInCard from '../../components/SignInCard';
 import ErrorScreen from '../../components/ErrorScreen';
@@ -163,8 +163,10 @@ export default function ManagePage({ params }) {
   return (
     // Locked to the viewport so only the chat list scrolls (avatar stays pinned).
     <div data-brand={brandId} style={{ height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--panel)' }}>
+      <PromoBar brand={brandId} />
       {/* host toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 18px', borderBottom: '1px solid var(--line-2)', flexShrink: 0, flexWrap: 'wrap' }}>
+        <BrandMark brand={brandId} size={16} />
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{channel.channelTitle || 'Live Stream'}</span>
         {channel.seller && <span className="mono" style={{ fontSize: 11, color: 'var(--faint)' }}>hosted by {channel.seller.name}</span>}
         <span className="mono" style={{ fontSize: 11, color: 'var(--faint)', padding: '3px 8px', borderRadius: 999, background: 'var(--stage)' }}>{channel.mode?.toUpperCase()}</span>
@@ -215,7 +217,7 @@ export default function ManagePage({ params }) {
   );
 }
 
-const toolbarBtn = { height: 34, padding: '0 14px', borderRadius: 10, border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 13, fontWeight: 500, cursor: 'pointer' };
+const toolbarBtn = { height: 34, padding: '0 14px', borderRadius: 'var(--r-sm)', border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 13, fontWeight: 500, cursor: 'pointer' };
 
 function Centered({ children }) {
   return (

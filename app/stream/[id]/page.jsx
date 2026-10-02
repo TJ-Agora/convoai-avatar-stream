@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import useChannel from '../../hooks/useChannel';
 import useAgora from '../../hooks/useAgora';
 import StreamScreen from '../../components/stream/StreamScreen';
-import { Spinner } from '../../components/stream/StreamParts';
+import { Spinner, BrandMark, PromoBar } from '../../components/stream/StreamParts';
 import ErrorScreen from '../../components/ErrorScreen';
 import { getBrand } from '../../../lib/brands';
 
@@ -116,7 +116,7 @@ export default function GuestStreamPage({ params }) {
   if (!name && !isOver) {
     return (
       <div data-brand={brandId}>
-        <JoinGate channel={channel} name={nameInput} email={emailInput} onName={setNameInput} onEmail={setEmailInput} onSubmit={submitJoin} error={credsError} />
+        <JoinGate brand={brandId} channel={channel} name={nameInput} email={emailInput} onName={setNameInput} onEmail={setEmailInput} onSubmit={submitJoin} error={credsError} />
       </div>
     );
   }
@@ -150,6 +150,7 @@ export default function GuestStreamPage({ params }) {
   // avatar stays pinned and only the chat list scrolls — never the page.
   return (
     <div data-brand={brandId} style={{ ...frame, minHeight: undefined, height: '100dvh', overflow: 'hidden' }}>
+      <PromoBar brand={brandId} />
       <StreamScreen
         channel={channel}
         isHost={false}
@@ -164,12 +165,13 @@ export default function GuestStreamPage({ params }) {
   );
 }
 
-function JoinGate({ channel, name, email, onName, onEmail, onSubmit, error }) {
+function JoinGate({ brand, channel, name, email, onName, onEmail, onSubmit, error }) {
   const ok = name.trim().length > 0 && emailValid(email.trim());
   return (
     <div style={{ minHeight: '100vh', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 24px' }}>
       <form onSubmit={onSubmit} style={{ width: '100%', maxWidth: 460, display: 'flex', flexDirection: 'column', gap: 26 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <BrandMark brand={brand} size={22} />
           <span className="mono" style={{ fontSize: 12, letterSpacing: '0.16em', color: 'var(--faint)' }}>JOIN CHANNEL</span>
           <h1 className="serif" style={{ margin: 0, fontSize: 40, lineHeight: 1.05, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
             You're joining {channel.channelTitle || 'the stream'}
@@ -187,11 +189,11 @@ function JoinGate({ channel, name, email, onName, onEmail, onSubmit, error }) {
         </div>
         {error && <div style={{ fontSize: 13, color: 'var(--red)' }}>{error}</div>}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 4 }}>
-          <button type="submit" disabled={!ok} style={{ height: 56, border: 'none', borderRadius: 14, cursor: ok ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600, background: ok ? 'var(--ink)' : 'var(--btn-disabled)', color: ok ? '#fff' : 'var(--faint)' }}>Join channel</button>
+          <button type="submit" disabled={!ok} style={{ height: 56, border: 'none', borderRadius: 'var(--r-lg)', cursor: ok ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600, background: ok ? 'var(--btn-bg)' : 'var(--btn-disabled)', color: ok ? 'var(--btn-fg)' : 'var(--faint)' }}>Join channel</button>
         </div>
       </form>
     </div>
   );
 }
 
-const gateInput = { height: 52, padding: '0 18px', border: '1px solid var(--line-3)', borderRadius: 13, fontSize: 16, color: 'var(--ink)', background: 'var(--panel)' };
+const gateInput = { height: 52, padding: '0 18px', border: '1px solid var(--line-3)', borderRadius: 'var(--r-md)', fontSize: 16, color: 'var(--ink)', background: 'var(--panel)' };

@@ -79,7 +79,7 @@ export default function DirectAvatarModal({ open, onClose, onSpeak, onThink, mob
         aria-modal="true"
         style={{
           width: '100%', maxWidth: 520, background: 'var(--panel)',
-          border: '1px solid var(--line-3)', borderRadius: 20, padding: '26px 26px 22px',
+          border: '1px solid var(--line-3)', borderRadius: 'var(--r-xl)', padding: '26px 26px 22px',
           display: 'flex', flexDirection: 'column', gap: 14,
           boxShadow: '0 34px 70px -34px rgba(0,0,0,0.35)',
         }}
@@ -88,13 +88,13 @@ export default function DirectAvatarModal({ open, onClose, onSpeak, onThink, mob
         <h2 className="serif" style={{ margin: 0, fontSize: 28, lineHeight: 1.1, letterSpacing: '-0.01em', color: 'var(--ink)' }}>Direct the avatar</h2>
 
         {/* Speak / Think segmented control */}
-        <div style={{ display: 'flex', gap: 6, padding: 4, background: 'var(--stage)', borderRadius: 12, alignSelf: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: 6, padding: 4, background: 'var(--stage)', borderRadius: 'var(--r-md)', alignSelf: 'flex-start' }}>
           {MODES.map((m) => (
             <button
               key={m.key}
               onClick={() => setMode(m.key)}
               style={{
-                height: 36, padding: '0 18px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                height: 36, padding: '0 18px', borderRadius: 'var(--r-sm)', border: 'none', cursor: 'pointer',
                 fontSize: 13, fontWeight: 600,
                 background: mode === m.key ? 'var(--ink)' : 'transparent',
                 color: mode === m.key ? '#fff' : 'var(--muted)',
@@ -117,7 +117,7 @@ export default function DirectAvatarModal({ open, onClose, onSpeak, onThink, mob
           rows={3}
           // 16px on mobile: prevents iOS Safari's focus auto-zoom.
           style={{
-            width: '100%', padding: '12px 16px', border: '1px solid var(--input-line)', borderRadius: 12,
+            width: '100%', padding: '12px 16px', border: '1px solid var(--input-line)', borderRadius: 'var(--r-md)',
             fontSize: mobile ? 16 : 14, lineHeight: 1.5, background: 'var(--panel)', resize: 'vertical',
             fontFamily: 'inherit', boxSizing: 'border-box',
           }}
@@ -130,7 +130,7 @@ export default function DirectAvatarModal({ open, onClose, onSpeak, onThink, mob
           <button
             onClick={onClose}
             disabled={busy}
-            style={{ height: 44, padding: '0 20px', borderRadius: 12, border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+            style={{ height: 44, padding: '0 20px', borderRadius: 'var(--r-md)', border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
           >
             Cancel
           </button>
@@ -138,8 +138,8 @@ export default function DirectAvatarModal({ open, onClose, onSpeak, onThink, mob
             onClick={send}
             disabled={busy || !text.trim()}
             style={{
-              height: 44, padding: '0 20px', borderRadius: 12, border: 'none',
-              background: 'var(--ink)', color: '#fff', fontSize: 14, fontWeight: 600,
+              height: 44, padding: '0 20px', borderRadius: 'var(--r-md)', border: 'none',
+              background: 'var(--btn-bg)', color: 'var(--btn-fg)', fontSize: 14, fontWeight: 600,
               cursor: busy ? 'wait' : 'pointer', opacity: busy || !text.trim() ? 0.7 : 1,
             }}
           >

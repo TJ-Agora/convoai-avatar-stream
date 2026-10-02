@@ -1,6 +1,30 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { getBrand } from '../../../lib/brands';
+
+/** Text wordmark for a brand pack (none for the default brand). */
+export function BrandMark({ brand, size = 18 }) {
+  const b = getBrand(brand);
+  if (!b.wordmark) return null;
+  return (
+    <span aria-label={b.label} style={{
+      fontFamily: 'var(--font-body)', fontWeight: 800, fontSize: size, lineHeight: 1,
+      letterSpacing: '-0.04em', textTransform: 'uppercase', color: 'var(--ink)', whiteSpace: 'nowrap',
+    }}>{b.wordmark}</span>
+  );
+}
+
+/** Thin promo ribbon (brand tagline) — the thredUP-style top bar. */
+export function PromoBar({ brand }) {
+  const b = getBrand(brand);
+  if (!b.tagline) return null;
+  return (
+    <div style={{ background: 'var(--promo-bg)', textAlign: 'center', padding: '7px 12px', flexShrink: 0 }}>
+      <span className="mono" style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink)' }}>{b.tagline}</span>
+    </div>
+  );
+}
 
 // Agent state → label + accent, matching the design prototype.
 export const STATE_MAP = {
@@ -23,7 +47,7 @@ export function StatePill({ state, size = 'md' }) {
       display: 'inline-flex', alignItems: 'center', gap: 9, padding: pad,
       background: speaking ? 'var(--ink)' : 'var(--panel)',
       border: speaking ? 'none' : '1px solid var(--line-3)',
-      borderRadius: 22,
+      borderRadius: 'var(--r-xl)',
     }}>
       <span style={{
         width: 7, height: 7, borderRadius: '50%', background: st.color,
@@ -89,7 +113,7 @@ export function Spinner({ size = 40 }) {
  * shows the diagonal-stripe "AVATAR VIDEO" placeholder from the design.
  * Renders the live-caption overlay when `caption` is set.
  */
-export function AvatarStage({ videoTrack, caption, width, height, aspectRatio, radius = 18 }) {
+export function AvatarStage({ videoTrack, caption, width, height, aspectRatio }) {
   const ref = useRef(null);
   useEffect(() => {
     if (!videoTrack || !ref.current) return;
@@ -100,10 +124,10 @@ export function AvatarStage({ videoTrack, caption, width, height, aspectRatio, r
   return (
     <div style={{ position: 'relative', width, height, maxWidth: '100%', ...(aspectRatio ? { aspectRatio } : {}) }}>
       {videoTrack ? (
-        <div ref={ref} style={{ width: '100%', height: '100%', borderRadius: radius, overflow: 'hidden', background: '#000' }} />
+        <div ref={ref} style={{ width: '100%', height: '100%', borderRadius: 'var(--r-stage)', overflow: 'hidden', background: '#000' }} />
       ) : (
         <div style={{
-          width: '100%', height: '100%', borderRadius: radius,
+          width: '100%', height: '100%', borderRadius: 'var(--r-stage)',
           background: 'repeating-linear-gradient(45deg, var(--stripe-a), var(--stripe-a) 9px, var(--stripe-b) 9px, var(--stripe-b) 18px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
@@ -115,7 +139,7 @@ export function AvatarStage({ videoTrack, caption, width, height, aspectRatio, r
         <div style={{
           position: 'absolute', left: 0, right: 0, bottom: 0, padding: '32px 16px 14px',
           background: 'linear-gradient(to top, rgba(11,11,11,0.86), rgba(11,11,11,0))',
-          borderRadius: `0 0 ${radius}px ${radius}px`,
+          borderRadius: '0 0 var(--r-stage) var(--r-stage)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <CaptionBars />

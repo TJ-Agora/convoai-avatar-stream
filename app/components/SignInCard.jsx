@@ -17,7 +17,7 @@ export default function SignInCard({ signInUrl, authError, note }) {
         </p>
       </div>
       {authError && (
-        <div style={{ padding: '10px 14px', background: 'color-mix(in oklab, var(--red) 10%, transparent)', border: '1px solid color-mix(in oklab, var(--red) 30%, transparent)', borderRadius: 10, fontSize: 13, color: 'var(--red)' }}>
+        <div style={{ padding: '10px 14px', background: 'color-mix(in oklab, var(--red) 10%, transparent)', border: '1px solid color-mix(in oklab, var(--red) 30%, transparent)', borderRadius: 'var(--r-sm)', fontSize: 13, color: 'var(--red)' }}>
           Sign-in failed ({authError}). Try again.
         </div>
       )}
@@ -25,7 +25,7 @@ export default function SignInCard({ signInUrl, authError, note }) {
         href={signInUrl}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', height: 56,
-          borderRadius: 14, background: 'var(--ink)', color: '#fff',
+          borderRadius: 'var(--r-lg)', background: 'var(--btn-bg)', color: 'var(--btn-fg)',
           fontSize: 16, fontWeight: 600, textDecoration: 'none',
         }}
       >

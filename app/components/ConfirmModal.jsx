@@ -31,7 +31,7 @@ export default function ConfirmModal({ open, eyebrow, title, body, confirmLabel 
         aria-modal="true"
         style={{
           width: '100%', maxWidth: 420, background: 'var(--panel)',
-          border: '1px solid var(--line-3)', borderRadius: 20, padding: '26px 26px 22px',
+          border: '1px solid var(--line-3)', borderRadius: 'var(--r-xl)', padding: '26px 26px 22px',
           display: 'flex', flexDirection: 'column', gap: 12,
           boxShadow: '0 34px 70px -34px rgba(0,0,0,0.35)',
         }}
@@ -45,7 +45,7 @@ export default function ConfirmModal({ open, eyebrow, title, body, confirmLabel 
           <button
             onClick={onCancel}
             disabled={busy}
-            style={{ height: 44, padding: '0 20px', borderRadius: 12, border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+            style={{ height: 44, padding: '0 20px', borderRadius: 'var(--r-md)', border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
           >
             {cancelLabel}
           </button>
@@ -53,8 +53,8 @@ export default function ConfirmModal({ open, eyebrow, title, body, confirmLabel 
             onClick={onConfirm}
             disabled={busy}
             style={{
-              height: 44, padding: '0 20px', borderRadius: 12, border: 'none',
-              background: danger ? 'var(--red)' : 'var(--ink)', color: '#fff',
+              height: 44, padding: '0 20px', borderRadius: 'var(--r-md)', border: 'none',
+              background: danger ? 'var(--red)' : 'var(--btn-bg)', color: danger ? '#fff' : 'var(--btn-fg)',
               fontSize: 14, fontWeight: 600, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.7 : 1,
             }}
           >

@@ -15,8 +15,8 @@ export default function ErrorScreen({ eyebrow, title, body, ctaHref = '/', ctaLa
           href={ctaHref}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: 48, padding: '0 28px', marginTop: 8, borderRadius: 13,
-            background: 'var(--ink)', color: '#fff', fontSize: 15, fontWeight: 600, textDecoration: 'none',
+            height: 48, padding: '0 28px', marginTop: 8, borderRadius: 'var(--r-md)',
+            background: 'var(--btn-bg)', color: 'var(--btn-fg)', fontSize: 15, fontWeight: 600, textDecoration: 'none',
           }}
         >
           {ctaLabel}

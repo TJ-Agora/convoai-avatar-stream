@@ -41,6 +41,18 @@
   --queue-dim:       #A6A6A1;   /* later queue rows */
   --radio-ring:      #D2D2CD;   /* inactive tile radio */
 
+  /* primary CTA (brand packs re-skin buttons through these) */
+  --btn-bg: var(--ink);
+  --btn-fg: #ffffff;
+  --promo-bg: #DCEBD0;          /* <PromoBar> ribbon; unused by the default brand */
+
+  /* radii — the default is soft/rounded; brands may square things off */
+  --r-sm: 10px;
+  --r-md: 12px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-stage: 18px;
+
   /* type */
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-body:  "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -53,10 +65,55 @@
    overridden --font-body / --ink actually takes effect below the wrapper. */
 [data-brand] { font-family: var(--font-body); color: var(--ink); }
 
+/* thredUP — sampled from thredup.com: navy ink on white, pale-sage promo bar,
+   cream panels, lavender + mint accents, square 1px-outlined buttons,
+   serif headlines over a grotesque body face. */
 [data-brand="thredup"] {
-  /* Filled from the thredUP Claude Design exports: --page, --panel, --stage,
-     --ink, --muted…, --line…, accents, --font-body/--font-serif, radii. */
+  --page:    #EEF0E8;
+  --panel:   #FFFFFF;
+  --stage:   #F4F6EB;
+  --stage-2: #FAFBF6;
+
+  --ink:     #232D49;
+  --muted:   #4D586C;
+  --muted-2: #6B7488;
+  --faint:   #8A91A3;
+  --faint-2: #A9AFBE;
+
+  --line:    #E3E6EC;
+  --line-2:  #ECEEF2;
+  --line-3:  #D9DEE7;
+
+  --green:   #4E9D6A;
+  --blue:    #6F7FD9;
+  --red:     #C8373B;
+
+  --btn-disabled:    #CFD3DD;
+  --input-line:      #C9CED9;
+  --you-bg:          #E6EBFB;
+  --you-line:        #BFCAF4;
+  --track:           #DDE1E8;
+  --stripe-a:        #EDEFE6;
+  --stripe-b:        #F4F6EB;
+  --spinner-track:   #E3E6EC;
+  --placeholder-ink: #9AA1B2;
+  --queue-dim:       #A9AFBE;
+  --radio-ring:      #C9CED9;
+
+  --btn-bg:  #DAEFC6;           /* mint CTA, navy text (thredUP "SHOP DENIM") */
+  --btn-fg:  #232D49;
+  --promo-bg:#DCEBD0;
+
+  --r-sm: 2px;
+  --r-md: 3px;
+  --r-lg: 4px;
+  --r-xl: 6px;
+  --r-stage: 4px;
+
+  --font-body: var(--font-thredup), "Inter", ui-sans-serif, system-ui, sans-serif;
 }
+/* thredUP labels are small-caps sans, not mono. */
+[data-brand="thredup"] .mono { font-family: var(--font-body); font-weight: 500; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
