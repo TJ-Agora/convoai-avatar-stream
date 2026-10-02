@@ -62,7 +62,7 @@ function HUD({ mode, batchPhase, batchCount, batchDeadline, collectionWindowMs, 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
       <span className="mono" style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--muted-2)' }}>{top}</span>
-      <div style={{ width: 150, height: 4, borderRadius: 3, background: '#E4E4DF', overflow: 'hidden' }}>
+      <div style={{ width: 150, height: 4, borderRadius: 3, background: 'var(--track)', overflow: 'hidden' }}>
         <div style={{ width: progress, height: '100%', background: 'var(--ink)', transition: 'width 0.9s linear' }} />
       </div>
       <span className="mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{sub}</span>
@@ -85,7 +85,7 @@ function HostControls({ isMuted, onToggleMute, onSpeakScript, onThinkScript, qr,
       />
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
         <button onClick={() => setModalOpen(true)} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>+ Add Script</button>
-        <button onClick={onToggleMute} style={{ height: 44, padding: '0 18px', borderRadius: 12, border: '1px solid #DBDBD6', background: isMuted ? 'var(--stage)' : 'var(--panel)', color: 'var(--ink)', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>{isMuted ? 'Unmute agent' : 'Mute agent'}</button>
+        <button onClick={onToggleMute} style={{ height: 44, padding: '0 18px', borderRadius: 12, border: '1px solid var(--input-line)', background: isMuted ? 'var(--stage)' : 'var(--panel)', color: 'var(--ink)', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>{isMuted ? 'Unmute agent' : 'Mute agent'}</button>
         {qr && <div style={{ marginLeft: 'auto' }}>{qr}</div>}
       </div>
     </div>

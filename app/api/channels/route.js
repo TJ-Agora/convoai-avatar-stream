@@ -7,7 +7,7 @@ export async function POST(request) {
     const { deny } = await requireSession();
     if (deny) return deny;
     const body = await request.json().catch(() => ({}));
-    const { channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed, avatarImageUrl, voiceGender } = body;
+    const { channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed, avatarImageUrl, voiceGender, brand, sellerId } = body;
 
     // Optional per-stream avatar image (Lemonslice): their servers fetch it,
     // so it must be a well-formed https URL with a real host — parse, don't
@@ -20,7 +20,9 @@ export async function POST(request) {
       }
     }
 
-    const result = await createChannel({ channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed, avatarImageUrl, voiceGender });
+    // brand/sellerId are allowlisted + resolved server-side in createChannel
+    // (lib/brands.js) — the client never supplies voice ids, images, or bios.
+    const result = await createChannel({ channelTitle, hostName, topic, mode, collectionWindowMs, ttsVendor, avatarVendor, ttsSpeed, avatarImageUrl, voiceGender, brand, sellerId });
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error creating channel:', error);

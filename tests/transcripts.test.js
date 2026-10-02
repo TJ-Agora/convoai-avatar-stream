@@ -78,7 +78,7 @@ describe('agent transcripts → chat feed', () => {
     // punctuation). It must be echo-skipped: no duplicate bubble, anchor intact.
     const echo = await channel.addAgentTranscript({
       turnId: 0,
-      text: "Hey everyone,welcome!I've got some amazing secondhand finds lined up for you today.Drop your questions about anything you see and I'll answer them live.",
+      text: "Hey everyone,welcome!I'm your host.Drop your questions in the chat and I'll answer them live.",
     });
     expect(echo.skipped).toBe('speak-echo');
 

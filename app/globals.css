@@ -28,10 +28,34 @@
   --blue:   #3E6FE0;   /* thinking / you */
   --red:    #E0524A;   /* speaking / live */
 
+  /* component tokens — promoted from inline hex so brand overrides reach them */
+  --btn-disabled:    #D6D6D1;   /* disabled primary button */
+  --input-line:      #DBDBD6;   /* input / secondary button border */
+  --you-bg:          #EEF2FD;   /* "you" row in the sequential queue */
+  --you-line:        #DCE4FA;
+  --track:           #E4E4DF;   /* HUD progress track */
+  --stripe-a:        #EAEAE5;   /* avatar placeholder stripes */
+  --stripe-b:        #F1F1ED;
+  --spinner-track:   #EAEAE6;
+  --placeholder-ink: #B4B4AF;   /* "AVATAR VIDEO" placeholder label */
+  --queue-dim:       #A6A6A1;   /* later queue rows */
+  --radio-ring:      #D2D2CD;   /* inactive tile radio */
+
   /* type */
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-body:  "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ---- brand packs (lib/brands.js) ----
+   Pages wrap themselves in <div data-brand="…">; a brand block overrides
+   tokens for everything inside. Re-declare the inherited props here so an
+   overridden --font-body / --ink actually takes effect below the wrapper. */
+[data-brand] { font-family: var(--font-body); color: var(--ink); }
+
+[data-brand="thredup"] {
+  /* Filled from the thredUP Claude Design exports: --page, --panel, --stage,
+     --ink, --muted…, --line…, accents, --font-body/--font-serif, radii. */
 }
 
 *, *::before, *::after { box-sizing: border-box; }

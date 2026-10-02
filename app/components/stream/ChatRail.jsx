@@ -17,12 +17,12 @@ function QueueList({ queue, myUid }) {
           <div key={q.id} style={{
             display: 'flex', alignItems: 'center', gap: 10,
             padding: isYou ? '9px 11px' : '4px 2px', borderRadius: isYou ? 10 : 0,
-            background: isYou ? '#EEF2FD' : 'transparent', border: isYou ? '1px solid #DCE4FA' : 'none',
+            background: isYou ? 'var(--you-bg)' : 'transparent', border: isYou ? '1px solid var(--you-line)' : 'none',
           }}>
             <span className="mono" style={{ fontSize: 11, fontWeight: 600, width: 32, flexShrink: 0, color: isNow ? 'var(--green)' : (isYou ? 'var(--blue)' : 'var(--faint-2)') }}>
               {isNow ? 'NOW' : String(i + 1).padStart(2, '0')}
             </span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: isYou ? 500 : 400, color: isYou ? 'var(--ink)' : (isNow ? 'var(--muted)' : '#A6A6A1'), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: isYou ? 500 : 400, color: isYou ? 'var(--ink)' : (isNow ? 'var(--muted)' : 'var(--queue-dim)'), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {q.user} — {q.text}
             </span>
             {isYou && <span className="mono" style={{ fontSize: 10, color: 'var(--blue)' }}>~{i * 40}s</span>}

@@ -102,6 +102,12 @@ Optional (defaults shown):
 
 ---
 
+## Brand packs (customer-flavored demos)
+
+Open the setup page as `/?brand=thredup` to create a stream with a brand pack: themed UI, brand-specific agent persona, and (where configured) named partner sellers to pick as the host. The brand is saved on the channel, so the host console and guest links look and sound the same with no extra params. Streams created from plain `/` are the generic demo.
+
+To add a brand: add an entry to `lib/brands.js` (copy, prompt, greeting, sellers) and a `[data-brand="<id>"]` token block in `app/globals.css`. Seller avatar images must be public https URLs (Lemonslice fetches them server-side) and voice ids must be Minimax stock voices.
+
 ## Project layout
 
 ```

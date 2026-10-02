@@ -78,7 +78,7 @@ export function Spinner({ size = 40 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
-      border: '3px solid #EAEAE6', borderTopColor: 'var(--ink)',
+      border: '3px solid var(--spinner-track)', borderTopColor: 'var(--ink)',
       animation: 'spin 0.9s linear infinite',
     }} />
   );
@@ -104,10 +104,10 @@ export function AvatarStage({ videoTrack, caption, width, height, aspectRatio, r
       ) : (
         <div style={{
           width: '100%', height: '100%', borderRadius: radius,
-          background: 'repeating-linear-gradient(45deg, #EAEAE5, #EAEAE5 9px, #F1F1ED 9px, #F1F1ED 18px)',
+          background: 'repeating-linear-gradient(45deg, var(--stripe-a), var(--stripe-a) 9px, var(--stripe-b) 9px, var(--stripe-b) 18px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <span className="mono" style={{ fontSize: 11, letterSpacing: '0.1em', color: '#B4B4AF' }}>AVATAR VIDEO</span>
+          <span className="mono" style={{ fontSize: 11, letterSpacing: '0.1em', color: 'var(--placeholder-ink)' }}>AVATAR VIDEO</span>
         </div>
       )}
 

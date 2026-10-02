@@ -117,7 +117,7 @@ export default function DirectAvatarModal({ open, onClose, onSpeak, onThink, mob
           rows={3}
           // 16px on mobile: prevents iOS Safari's focus auto-zoom.
           style={{
-            width: '100%', padding: '12px 16px', border: '1px solid #DBDBD6', borderRadius: 12,
+            width: '100%', padding: '12px 16px', border: '1px solid var(--input-line)', borderRadius: 12,
             fontSize: mobile ? 16 : 14, lineHeight: 1.5, background: 'var(--panel)', resize: 'vertical',
             fontFamily: 'inherit', boxSizing: 'border-box',
           }}

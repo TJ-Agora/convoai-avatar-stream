@@ -6,6 +6,7 @@ import useAgora from '../../hooks/useAgora';
 import StreamScreen from '../../components/stream/StreamScreen';
 import { Spinner } from '../../components/stream/StreamParts';
 import ErrorScreen from '../../components/ErrorScreen';
+import { getBrand } from '../../../lib/brands';
 
 const emailValid = (e) => !e || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
 
@@ -19,6 +20,8 @@ export default function GuestStreamPage({ params }) {
   const [credsError, setCredsError] = useState(null);
 
   const channel = useChannel(id, null, rtmCreds ? { rtmToken: rtmCreds.rtmToken, rtmUid: rtmCreds.uid } : null);
+  const brandId = channel.brand || 'default';
+  useEffect(() => { document.title = getBrand(brandId).label; }, [brandId]);
 
   // Restore identity from this tab's localStorage.
   useEffect(() => {
@@ -88,6 +91,7 @@ export default function GuestStreamPage({ params }) {
   // Bad or expired stream link — give the visitor a way out, not a dead end.
   if (credsError) {
     return (
+      <div data-brand={brandId}>
       <ErrorScreen
         eyebrow="STREAM NOT FOUND"
         title="This stream isn't live"
@@ -95,17 +99,31 @@ export default function GuestStreamPage({ params }) {
         ctaHref="/"
         ctaLabel="Go to home"
       />
+      </div>
     );
-  }
-
-  if (!name && !isOver) {
-    return <JoinGate channel={channel} name={nameInput} email={emailInput} onName={setNameInput} onEmail={setEmailInput} onSubmit={submitJoin} error={credsError} />;
   }
 
   const frame = { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--panel)' };
 
+  // Hold a neutral spinner until the first state snapshot lands — the brand
+  // rides in the snapshot, so rendering earlier would flash the default theme.
+  if (!channel.loaded) {
+    return (
+      <div style={{ ...frame, alignItems: 'center', justifyContent: 'center' }}><Spinner /></div>
+    );
+  }
+
+  if (!name && !isOver) {
+    return (
+      <div data-brand={brandId}>
+        <JoinGate channel={channel} name={nameInput} email={emailInput} onName={setNameInput} onEmail={setEmailInput} onSubmit={submitJoin} error={credsError} />
+      </div>
+    );
+  }
+
   if (isOver) {
     return (
+      <div data-brand={brandId}>
       <ErrorScreen
         eyebrow="STREAM ENDED"
         title="Thanks for watching"
@@ -113,12 +131,13 @@ export default function GuestStreamPage({ params }) {
         ctaHref="/"
         ctaLabel="Go to home"
       />
+      </div>
     );
   }
 
   if (!isLive || !isJoined) {
     return (
-      <div style={{ ...frame, alignItems: 'center', justifyContent: 'center', gap: 22 }}>
+      <div data-brand={brandId} style={{ ...frame, alignItems: 'center', justifyContent: 'center', gap: 22 }}>
         <Spinner />
         <span className="mono" style={{ fontSize: 12, letterSpacing: '0.12em', color: 'var(--muted)' }}>
           {isLive ? 'CONNECTING' : 'WAITING FOR HOST'} TO {(channel.channelTitle || id).toUpperCase()}
@@ -130,7 +149,7 @@ export default function GuestStreamPage({ params }) {
   // Live view locks to the viewport (dvh handles mobile browser chrome) so the
   // avatar stays pinned and only the chat list scrolls — never the page.
   return (
-    <div style={{ ...frame, minHeight: undefined, height: '100dvh', overflow: 'hidden' }}>
+    <div data-brand={brandId} style={{ ...frame, minHeight: undefined, height: '100dvh', overflow: 'hidden' }}>
       <StreamScreen
         channel={channel}
         isHost={false}
@@ -168,7 +187,7 @@ function JoinGate({ channel, name, email, onName, onEmail, onSubmit, error }) {
         </div>
         {error && <div style={{ fontSize: 13, color: 'var(--red)' }}>{error}</div>}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 4 }}>
-          <button type="submit" disabled={!ok} style={{ height: 56, border: 'none', borderRadius: 14, cursor: ok ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600, background: ok ? 'var(--ink)' : '#D6D6D1', color: ok ? '#fff' : 'var(--faint)' }}>Join channel</button>
+          <button type="submit" disabled={!ok} style={{ height: 56, border: 'none', borderRadius: 14, cursor: ok ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600, background: ok ? 'var(--ink)' : 'var(--btn-disabled)', color: ok ? '#fff' : 'var(--faint)' }}>Join channel</button>
         </div>
       </form>
     </div>

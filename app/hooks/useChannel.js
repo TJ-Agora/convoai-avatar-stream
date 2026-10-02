@@ -5,6 +5,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 const INITIAL_STATE = {
   status: 'IDLE',                // 'IDLE' | 'LIVE' | 'CLOSED'
   mode: 'batched',              // 'batched' | 'sequential'
+  brand: 'default',             // brand pack id (lib/brands.js) — drives theme + copy
+  seller: null,                 // { id, name } when a partner persona hosts
   collectionWindowMs: 30000,
   channelTitle: '',
   agentId: null,
@@ -35,6 +37,10 @@ const INITIAL_STATE = {
  */
 export default function useChannel(channelId, hostToken = null, creds = null) {
   const [channelState, setChannelState] = useState(INITIAL_STATE);
+  // True once ANY authoritative state has arrived (snapshot or 404). Pages
+  // hold a neutral spinner until then so a branded room never flashes the
+  // default theme — the brand rides in the snapshot, not the URL.
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(null);
   const rtmClientRef = useRef(null);
   const agoraRTMRef = useRef(null);
@@ -49,6 +55,7 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
       lastRevRef.current = data.rev;
     }
     setChannelState(data);
+    setLoaded(true);
   }, []);
 
   // Initial state fetch + periodic poll. RTM broadcasts cover state changes
@@ -66,6 +73,7 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
         if (!mounted) return;
         if (res.status === 404) {
           setChannelState((prev) => prev.status === 'CLOSED' ? prev : { ...prev, status: 'CLOSED' });
+          setLoaded(true);
           return;
         }
         if (res.ok) {
@@ -261,6 +269,7 @@ export default function useChannel(channelId, hostToken = null, creds = null) {
 
   return {
     ...channelState,
+    loaded,
     error,
     channelId,
     sendMessage,
