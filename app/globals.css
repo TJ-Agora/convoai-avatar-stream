@@ -65,7 +65,7 @@
    overridden --font-body / --ink actually takes effect below the wrapper. */
 [data-brand] { font-family: var(--font-body); color: var(--ink); }
 
-/* thredUP — sampled from thredup.com: navy ink on white, pale-sage promo bar,
+/* ThredUp — sampled from thredup.com: navy ink on white, pale-sage promo bar,
    cream panels, lavender + mint accents, square 1px-outlined buttons,
    serif headlines over a grotesque body face. */
 [data-brand="thredup"] {
@@ -100,7 +100,7 @@
   --queue-dim:       #A9AFBE;
   --radio-ring:      #C9CED9;
 
-  --btn-bg:  #DAEFC6;           /* mint CTA, navy text (thredUP "SHOP DENIM") */
+  --btn-bg:  #DAEFC6;           /* mint CTA, navy text (ThredUp "SHOP DENIM") */
   --btn-fg:  #232D49;
   --promo-bg:#DCEBD0;
 
@@ -112,7 +112,7 @@
 
   --font-body: var(--font-thredup), "Inter", ui-sans-serif, system-ui, sans-serif;
 }
-/* thredUP labels are small-caps sans, not mono. */
+/* ThredUp labels are small-caps sans, not mono. */
 [data-brand="thredup"] .mono { font-family: var(--font-body); font-weight: 500; }
 
 *, *::before, *::after { box-sizing: border-box; }

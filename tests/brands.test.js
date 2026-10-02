@@ -43,7 +43,7 @@ describe('brand on a channel', () => {
     const { channel } = await liveChannel(t, { mode: 'sequential' });
     const { extra } = agoraMock.calls.join[0];
     expect(extra.systemPrompt).toContain('friendly live host');
-    expect(extra.systemPrompt).not.toContain('thredUP');
+    expect(extra.systemPrompt).not.toContain('ThredUp');
     expect(extra.greeting).toContain("I'm your host");
     expect(extra.voiceId).toBeUndefined();
 
@@ -62,7 +62,7 @@ describe('brand on a channel', () => {
     const { channel } = await liveChannel(t, { mode: 'sequential', brand: 'thredup', avatarVendor: 'anam' });
     const join = agoraMock.calls.join[0];
     expect(join.avatarVendor).toBe('anam');
-    expect(join.extra.systemPrompt).toContain('thredUP');
+    expect(join.extra.systemPrompt).toContain('ThredUp');
     expect(join.extra.systemPrompt).toContain('live seller');
     expect(join.extra.greeting).toContain('secondhand finds');
     expect(join.extra.voiceId).toBeUndefined();

@@ -21,7 +21,7 @@ const jetbrains = JetBrains_Mono({
   display: 'swap',
 });
 
-// Brand-pack face (thredUP's grotesque body type). Fonts are per-deployment,
+// Brand-pack face (ThredUp's grotesque body type). Fonts are per-deployment,
 // so it's always loaded; only the [data-brand="thredup"] block references it.
 const inter = Inter({
   subsets: ['latin'],

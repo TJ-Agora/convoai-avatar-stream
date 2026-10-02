@@ -15,7 +15,7 @@ export function BrandMark({ brand, size = 18 }) {
   );
 }
 
-/** Thin promo ribbon (brand tagline) — the thredUP-style top bar. */
+/** Thin promo ribbon (brand tagline) — the ThredUp-style top bar. */
 export function PromoBar({ brand }) {
   const b = getBrand(brand);
   if (!b.tagline) return null;
