@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { PresencePill, LivePill } from './StreamParts';
+import { PresencePill, LivePill, BrandMark } from './StreamParts';
 
 function QueueList({ queue, myUid }) {
   return (
@@ -17,12 +17,12 @@ function QueueList({ queue, myUid }) {
           <div key={q.id} style={{
             display: 'flex', alignItems: 'center', gap: 10,
             padding: isYou ? '9px 11px' : '4px 2px', borderRadius: isYou ? 10 : 0,
-            background: isYou ? '#EEF2FD' : 'transparent', border: isYou ? '1px solid #DCE4FA' : 'none',
+            background: isYou ? 'var(--you-bg)' : 'transparent', border: isYou ? '1px solid var(--you-line)' : 'none',
           }}>
             <span className="mono" style={{ fontSize: 11, fontWeight: 600, width: 32, flexShrink: 0, color: isNow ? 'var(--green)' : (isYou ? 'var(--blue)' : 'var(--faint-2)') }}>
               {isNow ? 'NOW' : String(i + 1).padStart(2, '0')}
             </span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: isYou ? 500 : 400, color: isYou ? 'var(--ink)' : (isNow ? 'var(--muted)' : '#A6A6A1'), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: isYou ? 500 : 400, color: isYou ? 'var(--ink)' : (isNow ? 'var(--muted)' : 'var(--queue-dim)'), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {q.user} — {q.text}
             </span>
             {isYou && <span className="mono" style={{ fontSize: 10, color: 'var(--blue)' }}>~{i * 40}s</span>}
@@ -47,7 +47,7 @@ function MessageBubble({ m, myUid }) {
       <div style={{
         background: self ? 'var(--ink)' : 'var(--stage)',
         color: self ? '#fff' : 'var(--ink)',
-        borderRadius: self ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
+        borderRadius: self ? 'var(--r-lg) 4px var(--r-lg) var(--r-lg)' : '4px var(--r-lg) var(--r-lg) var(--r-lg)',
         padding: '10px 14px', maxWidth: '88%', fontSize: 14, lineHeight: 1.4,
       }}>{m.text}</div>
     </div>
@@ -64,7 +64,7 @@ function PendingAnswerBubble({ liveText }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-start' }}>
       <span className="mono" style={{ fontSize: 10, letterSpacing: '0.08em', color: 'var(--faint-2)' }}>AVATAR</span>
       <div style={{
-        background: 'var(--stage)', color: 'var(--ink)', borderRadius: '4px 14px 14px 14px',
+        background: 'var(--stage)', color: 'var(--ink)', borderRadius: '4px var(--r-lg) var(--r-lg) var(--r-lg)',
         padding: '10px 14px', maxWidth: '88%', fontSize: 14, lineHeight: 1.4,
       }}>
         {liveText ? (
@@ -102,9 +102,9 @@ function Composer({ isHost, onSend, mobile }) {
         placeholder={isHost ? 'Ask the avatar a question…' : 'Ask a question…'}
         // 16px on mobile: iOS Safari auto-zooms (and stays zoomed) when a
         // focused input's font-size is below 16px.
-        style={{ flex: 1, height: 42, padding: '0 14px', border: 'none', borderRadius: 11, background: 'var(--stage)', fontSize: mobile ? 16 : 14, color: 'var(--ink)' }}
+        style={{ flex: 1, height: 42, padding: '0 14px', border: 'none', borderRadius: 'var(--r-sm)', background: 'var(--stage)', fontSize: mobile ? 16 : 14, color: 'var(--ink)' }}
       />
-      <button onClick={send} disabled={busy} style={{ width: 42, height: 42, border: 'none', borderRadius: 11, background: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, cursor: 'pointer' }}>→</button>
+      <button onClick={send} disabled={busy} style={{ width: 42, height: 42, border: 'none', borderRadius: 'var(--r-sm)', background: 'var(--btn-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--btn-fg)', fontSize: 16, cursor: 'pointer' }}>→</button>
     </div>
   );
 }
@@ -130,7 +130,10 @@ export default function ChatRail({ channel, isHost, myUid, onSend, mobile, liveC
       {/* header */}
       {!mobile && (
         <div style={{ padding: '20px 22px', borderBottom: '1px solid var(--line-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <PresencePill count={channel.presence || 0} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <BrandMark brand={channel.brand} size={14} />
+            <PresencePill count={channel.presence || 0} />
+          </div>
           <LivePill />
         </div>
       )}

@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import useChannel from '../../hooks/useChannel';
 import useAgora from '../../hooks/useAgora';
 import StreamScreen from '../../components/stream/StreamScreen';
-import { Spinner } from '../../components/stream/StreamParts';
+import { Spinner, BrandMark, PromoBar } from '../../components/stream/StreamParts';
 import { useAgoraAuth } from '../../../hooks/useAgoraAuth';
 import SignInCard from '../../components/SignInCard';
 import ErrorScreen from '../../components/ErrorScreen';
 import ConfirmModal from '../../components/ConfirmModal';
+import { getBrand } from '../../../lib/brands';
 
 export default function ManagePage({ params }) {
   const { hostToken } = params;
@@ -57,6 +58,8 @@ export default function ManagePage({ params }) {
   }, [channelId, hostToken]);
 
   const channel = useChannel(channelId, hostToken, rtmCreds ? { rtmToken: rtmCreds.rtmToken, rtmUid: rtmCreds.uid } : null);
+  const brandId = channel.brand || 'default';
+  useEffect(() => { document.title = getBrand(brandId).label; }, [brandId]);
 
   const { remoteVideoTrack, isJoined, isMuted, agentSpeakingState, liveCaption, join, leave, toggleMute } = useAgora(
     channel.channelName,
@@ -159,10 +162,13 @@ export default function ManagePage({ params }) {
 
   return (
     // Locked to the viewport so only the chat list scrolls (avatar stays pinned).
-    <div style={{ height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--panel)' }}>
+    <div data-brand={brandId} style={{ height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: 'var(--panel)' }}>
+      <PromoBar brand={brandId} />
       {/* host toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 18px', borderBottom: '1px solid var(--line-2)', flexShrink: 0, flexWrap: 'wrap' }}>
+        <BrandMark brand={brandId} size={16} />
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{channel.channelTitle || 'Live Stream'}</span>
+        {channel.seller && <span className="mono" style={{ fontSize: 11, color: 'var(--faint)' }}>hosted by {channel.seller.name}</span>}
         <span className="mono" style={{ fontSize: 11, color: 'var(--faint)', padding: '3px 8px', borderRadius: 999, background: 'var(--stage)' }}>{channel.mode?.toUpperCase()}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap' }}>
           <span className="mono" style={{ fontSize: 11, color: 'var(--muted)', maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestUrl}</span>
@@ -211,7 +217,7 @@ export default function ManagePage({ params }) {
   );
 }
 
-const toolbarBtn = { height: 34, padding: '0 14px', borderRadius: 10, border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 13, fontWeight: 500, cursor: 'pointer' };
+const toolbarBtn = { height: 34, padding: '0 14px', borderRadius: 'var(--r-sm)', border: '1px solid var(--line-3)', background: 'var(--panel)', color: 'var(--ink)', fontSize: 13, fontWeight: 500, cursor: 'pointer' };
 
 function Centered({ children }) {
   return (

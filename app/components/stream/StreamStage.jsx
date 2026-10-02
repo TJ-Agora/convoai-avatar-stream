@@ -62,7 +62,7 @@ function HUD({ mode, batchPhase, batchCount, batchDeadline, collectionWindowMs, 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
       <span className="mono" style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--muted-2)' }}>{top}</span>
-      <div style={{ width: 150, height: 4, borderRadius: 3, background: '#E4E4DF', overflow: 'hidden' }}>
+      <div style={{ width: 150, height: 4, borderRadius: 3, background: 'var(--track)', overflow: 'hidden' }}>
         <div style={{ width: progress, height: '100%', background: 'var(--ink)', transition: 'width 0.9s linear' }} />
       </div>
       <span className="mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{sub}</span>
@@ -84,8 +84,8 @@ function HostControls({ isMuted, onToggleMute, onSpeakScript, onThinkScript, qr,
         mobile={mobile}
       />
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-        <button onClick={() => setModalOpen(true)} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 12, background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>+ Add Script</button>
-        <button onClick={onToggleMute} style={{ height: 44, padding: '0 18px', borderRadius: 12, border: '1px solid #DBDBD6', background: isMuted ? 'var(--stage)' : 'var(--panel)', color: 'var(--ink)', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>{isMuted ? 'Unmute agent' : 'Mute agent'}</button>
+        <button onClick={() => setModalOpen(true)} style={{ height: 44, padding: '0 20px', border: 'none', borderRadius: 'var(--r-md)', background: 'var(--btn-bg)', color: 'var(--btn-fg)', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>+ Add Script</button>
+        <button onClick={onToggleMute} style={{ height: 44, padding: '0 18px', borderRadius: 'var(--r-md)', border: '1px solid var(--input-line)', background: isMuted ? 'var(--stage)' : 'var(--panel)', color: 'var(--ink)', cursor: 'pointer', fontSize: 14, fontWeight: 500 }}>{isMuted ? 'Unmute agent' : 'Mute agent'}</button>
         {qr && <div style={{ marginLeft: 'auto' }}>{qr}</div>}
       </div>
     </div>
@@ -100,7 +100,6 @@ export default function StreamStage({
   const avatarW = mobile ? 200 : 'auto';
   const avatarH = mobile ? 260 : '75%';
   const avatarAspect = mobile ? undefined : '272 / 360';
-  const radius = mobile ? 16 : 18;
   // Prefer the real words streaming from the toolkit's transcript events;
   // fall back to the server's caption (host scripts / "Answering…" status).
   const caption = liveCaption || channel.caption;
@@ -131,7 +130,7 @@ export default function StreamStage({
 
       {/* center: avatar */}
       <div style={{ flex: mobile ? undefined : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0, padding: mobile ? 0 : '18px 0' }}>
-        <AvatarStage videoTrack={videoTrack} caption={caption} width={avatarW} height={avatarH} aspectRatio={avatarAspect} radius={radius} />
+        <AvatarStage videoTrack={videoTrack} caption={caption} width={avatarW} height={avatarH} aspectRatio={avatarAspect} />
       </div>
 
       {/* host controls (desktop hosts get the join-QR in-row, where the mode

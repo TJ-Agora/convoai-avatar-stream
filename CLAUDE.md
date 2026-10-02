@@ -63,7 +63,7 @@ Next.js 14 (App Router) with API routes for server logic and React client pages 
 
 ### How the AI Agent Is Used
 
-One agent is started **per channel** with a friendly-host system prompt (`buildHostSystemPrompt(title, topic)` in `channelManager.js`). Preset is ASR + LLM + TTS (`deepgram_nova_3`, `openai_gpt_4o_mini`, `minimax_speech_2_6_turbo`). Two server-side calls drive it:
+One agent is started **per channel** with a brand-specific system prompt (`getBrand(brand).systemPrompt(title, topic, seller)` in `lib/brands.js`; the default brand is the friendly generic host — see Key Concept 8). Preset is ASR + LLM + TTS (`deepgram_nova_3`, `openai_gpt_4o_mini`, `minimax_speech_2_6_turbo`). Two server-side calls drive it:
 
 - **`/think`** — answers audience questions through the LLM, spoken via TTS. Sequential mode sends one question at a time; batched mode sends one combined prompt per window.
 - **`/speak`** — the host's manual scripted lines (bypasses the LLM, straight to TTS).
@@ -92,6 +92,7 @@ convoai_stream/
 ├── claude_design/                      ← Static UI prototype (design source of truth)
 ├── lib/                                ← Server-side modules (Node, ESM .js)
 │   ├── agoraService.js                 ← Agora REST wrapper: joinAgent, speak, think, leaveAgent, listAgents, publishChannelMessage
+│   ├── brands.js                       ← Brand registry: per-brand prompt/greeting/copy + seller personas (opt-in via /?brand=…)
 │   ├── channelManager.js               ← Per-channel orchestrator on Redis — modes, messages, queue, batch, speech lock, tickChannel
 │   ├── channelStore.js                 ← Redis layer (Upstash): key layout, TTLs, NX locks
 │   └── tokenService.js                 ← RTC + RTM token generation; generateClientCredentials for per-guest minting
@@ -186,14 +187,26 @@ Every tab fetches `GET /api/channels/[id]/credentials?role=guest|host` → `{uid
 |---|---|---|
 | **Minimax (preset)** | TTS | Default. Requires `language_boost: 'English'` and `audio_setting.sample_rate: 24000` (else Anam audio sync breaks). |
 | **Anam** | Avatar | Default. `sample_rate: 24000`, `video_encoding: 'H264'`, `quality: 'high'`. |
-| **Lemonslice** | Avatar | No dedicated ConvoAI vendor — uses the **generic avatar** interface: `vendor: 'generic'`, `api_base_url: https://lemonslice.com/api/liveai/agora`, plus `sample_rate: 24000`, `version: 'v1'`, `area`. Selected per channel via the setup-page query param `/?avatar=lemonslice` (allowlist: anam, lemonslice, heygen — no vendor form UI by design; when active, the form shows an optional AVATAR IMAGE URL field; entering an image also reveals a Female/Male voice toggle — `voiceGender` in meta selects `MINIMAX_VOICE_ID` vs `MINIMAX_VOICE_ID_MALE`, default `English_expressive_narrator`). `avatar_id` accepts a Lemonslice agent id OR a public https image URL — the per-stream image (stored as `avatarImageUrl` in meta) wins over the `LEMONSLICE_AVATAR_ID` env default. Env: `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID`. |
+| **Lemonslice** | Avatar | No dedicated ConvoAI vendor — uses the **generic avatar** interface: `vendor: 'generic'`, `api_base_url: https://lemonslice.com/api/liveai/agora`, plus `sample_rate: 24000`, `version: 'v1'`, `area`. Selected per channel via the setup-page query param `/?avatar=lemonslice` (allowlist: anam, lemonslice, heygen — no vendor form UI by design; when active, the form shows an optional AVATAR IMAGE URL field; the setup form's Female/Male voice toggle applies to EVERY avatar vendor — `voiceGender` in meta selects `MINIMAX_VOICE_ID` vs `MINIMAX_VOICE_ID_MALE`; an explicit `voiceId` in meta (brand seller persona) wins over both. Voice ids must be Minimax STOCK voices: the Agora preset runs under Agora's Minimax account, so cloned `moss_audio_…` ids fail with vendor error 2042). `avatar_id` accepts a Lemonslice agent id OR a public https image URL — the per-stream image (stored as `avatarImageUrl` in meta) wins over the `LEMONSLICE_AVATAR_ID` env default. Env: `LEMONSLICE_API_KEY`, `LEMONSLICE_AVATAR_ID`. |
 | **HeyGen** | Avatar | Custom vendor; `vendor: 'liveavatar'` in Agora config. |
+
+---
+
+### 8. Brand Packs (opt-in, prospect-specific demos)
+
+One deployment serves the generic demo AND customer-flavored variants. A brand is chosen on the setup page via `/?brand=<id>` (composes with `?avatar=`), stored in channel meta at create, and carried in every state snapshot (`brand`, `seller`). Everything downstream keys off the channel, never the URL — host and guest links carry no params.
+
+- **Registry:** `lib/brands.js` — plain ESM imported by server and client (no secrets). Per brand: `label`, `defaultTitle`, topic copy, `systemPrompt(title, topic, seller)`, `greeting(title, seller)`, batch-prompt phrasing, and `sellers[]` (named partner personas: `avatarVendor`, `avatarImageUrl`, `voiceId`, `bio`). Unknown ids fall back to `default`. Adding a prospect = one registry entry + one CSS token block.
+- **Seller resolution is server-side.** The client sends only `brand` + `sellerId`; `createChannel` resolves the persona and OVERRIDES the form's avatar vendor/image and pins `voiceId`. Nothing persona-related is trusted from the body. Seller images must be PUBLIC https URLs (Lemonslice fetches them server-side — localhost/repo paths never work).
+- **Theme:** pages wrap in `<div data-brand={channel.brand}>`; `app/globals.css` keeps `:root` as the default palette and overrides tokens in `[data-brand="<id>"]` blocks. Everything a brand might re-skin is a token: colors (no inline hex), radii (`--r-sm/md/lg/xl/stage`), and primary CTAs (`--btn-bg/--btn-fg`). Fonts are per-deployment: load via `next/font` in `layout.js` (Inter is loaded as `--font-thredup`), reference inside the brand block. `<BrandMark>` (text wordmark) and `<PromoBar>` (tagline ribbon) in `StreamParts.jsx` render nothing for brands without `wordmark`/`tagline`. ThredUp's palette was sampled from a thredup.com screenshot (navy `#232D49`, mint CTA `#DAEFC6`, lavender `#BFCAF4`, cream `#F4F6EB`).
+- **No flash:** `useChannel` exposes `loaded` (first snapshot or 404 seen); the guest page holds a neutral spinner until then.
+- **Greetings must start with "Hey everyone"** — tests filter the greeting bubble out of the feed by that prefix.
 
 ---
 
 ## Environment
 
-Runs on **port 4000** (`next dev -p 4000`). See `.env.example` for the full list. Required: `AGORA_APP_ID`, `NEXT_PUBLIC_AGORA_APP_ID`, `AGORA_USERNAME`, `AGORA_PASSWORD`, `AGORA_APP_CERTIFICATE`, `AGORA_PRESET` (+ `AGORA_PRESET_ASR_LLM`). TTS: `MINIMAX_VOICE_ID` (+ `MINIMAX_VOICE_ID_MALE` for the Lemonslice voice toggle), `TTS_SPEED` (default 1.0). Avatar: `AVATAR_AGORA_UID`, `ANAM_API_KEY`, `ANAM_AVATAR_ID` (or HeyGen).
+Runs on **port 4000** (`next dev -p 4000`). See `.env.example` for the full list. Required: `AGORA_APP_ID`, `NEXT_PUBLIC_AGORA_APP_ID`, `AGORA_USERNAME`, `AGORA_PASSWORD`, `AGORA_APP_CERTIFICATE`, `AGORA_PRESET` (+ `AGORA_PRESET_ASR_LLM`). TTS: `MINIMAX_VOICE_ID` (+ `MINIMAX_VOICE_ID_MALE` for the setup form's Male voice toggle; brand seller personas pin a `voiceId` instead), `TTS_SPEED` (default 1.0). Avatar: `AVATAR_AGORA_UID`, `ANAM_API_KEY`, `ANAM_AVATAR_ID` (or HeyGen).
 
 ---
 

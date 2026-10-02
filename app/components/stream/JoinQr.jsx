@@ -23,7 +23,7 @@ export default function JoinQr({ channelId }) {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7,
       padding: '10px 10px 8px', background: 'var(--panel)',
-      border: '1px solid var(--line-3)', borderRadius: 12,
+      border: '1px solid var(--line-3)', borderRadius: 'var(--r-md)',
     }}>
       <QRCode value={url} size={96} bgColor="#ffffff" fgColor="#0B0B0B" />
       <span className="mono" style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.12em', color: 'var(--faint)' }}>
