@@ -15,6 +15,10 @@ const WINDOWS = [
 
 const AVATAR_VENDORS = ['anam', 'lemonslice', 'heygen'];
 
+// "Who's hosting" seller picker. Hidden for now: a brand with sellers always
+// uses its first seller (ThredUp → Nava). Flip to true to let the host choose.
+const SHOW_SELLER_PICKER = false;
+
 // Avatar provider is a URL switch, not a form control: /?avatar=lemonslice.
 // Read lazily (not useSearchParams) so the page needs no Suspense boundary.
 function avatarFromQuery() {
@@ -48,7 +52,8 @@ export default function SetupPage() {
   const [avatarVendor] = useState(avatarFromQuery);
   const [avatarImageUrl, setAvatarImageUrl] = useState('');
   const [voiceGender, setVoiceGender] = useState('female');
-  const [sellerId, setSellerId] = useState('');   // '' = the brand's generic host
+  // '' = the brand's generic host; defaults to the brand's first seller.
+  const [sellerId, setSellerId] = useState(() => getBrand(brandFromQuery()).sellers[0]?.id || '');
   const seller = brand.sellers.find((s) => s.id === sellerId) || null;
 
   const create = async () => {
@@ -161,7 +166,7 @@ export default function SetupPage() {
               <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={brand.topicPlaceholder} style={inputStyle} />
             </Field>
 
-            {brand.sellers.length > 0 && (
+            {SHOW_SELLER_PICKER && brand.sellers.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <span className="mono" style={labelStyle}>WHO'S HOSTING</span>
                 <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
